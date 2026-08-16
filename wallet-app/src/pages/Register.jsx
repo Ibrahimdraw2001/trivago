@@ -57,6 +57,9 @@ export default function Register() {
         <div className="sub">
           لديك حساب بالفعل؟ <Link to="/login">سجل الدخول</Link>
         </div>
+        <div className="sub">
+          <Link to="/terms">قوانين الاستخدام</Link>
+        </div>
       </div>
     </div>
   );

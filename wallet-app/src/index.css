@@ -673,6 +673,58 @@ th {
   font-weight: 700;
 }
 
+.wallet-footer {
+  text-align: center;
+  padding: 6px 0 2px;
+}
+
+.wallet-footer a {
+  color: #9aa3b2;
+  font-size: 12px;
+}
+
+/* Terms page */
+.terms-page {
+  align-items: flex-start;
+  padding: 28px 16px 40px;
+}
+
+.terms-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 28px 22px;
+  width: 100%;
+  max-width: 520px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.25);
+}
+
+.terms-section {
+  margin-bottom: 18px;
+}
+
+.terms-section h2 {
+  font-size: 15px;
+  color: #00578b;
+  margin-bottom: 6px;
+}
+
+.terms-section ul {
+  padding-right: 18px;
+}
+
+.terms-section li {
+  font-size: 13px;
+  color: #374151;
+  line-height: 1.7;
+  margin-bottom: 4px;
+}
+
+.terms-back {
+  display: block;
+  text-align: center;
+  margin-top: 8px;
+}
+
 .form-error {
   color: #b91c1c;
   background: #fee2e2;

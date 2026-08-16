@@ -49,6 +49,9 @@ export default function Login() {
         <div className="sub">
           ليس لديك حساب؟ <Link to="/register">أنشئ حساباً جديداً</Link>
         </div>
+        <div className="sub">
+          <Link to="/terms">قوانين الاستخدام</Link>
+        </div>
       </div>
     </div>
   );

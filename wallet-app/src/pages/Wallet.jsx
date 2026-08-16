@@ -97,6 +97,10 @@ export default function Wallet() {
             : 'اشترك بمستوى لتبدأ بتقييم الفنادق وكسب المكافآت.'}
         </p>
       </div>
+
+      <div className="wallet-footer">
+        <Link to="/terms">قوانين الاستخدام</Link>
+      </div>
     </div>
   );
 }

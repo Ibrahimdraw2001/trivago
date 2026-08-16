@@ -1,35 +1,62 @@
-const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const bcrypt = require('bcryptjs');
 const { HOTELS } = require('./hotels-data');
 
-const db = new sqlite3.Database(path.join(__dirname, 'wallet.db'));
+const USE_REMOTE = !!process.env.TURSO_DATABASE_URL;
 
-function run(sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.run(sql, params, function (err) {
-      if (err) return reject(err);
-      resolve({ lastID: this.lastID, changes: this.changes });
-    });
-  });
-}
+let run;
+let get;
+let all;
+let db;
 
-function get(sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.get(sql, params, (err, row) => {
-      if (err) return reject(err);
-      resolve(row);
-    });
+if (USE_REMOTE) {
+  const { createClient } = require('@libsql/client');
+  db = createClient({
+    url: process.env.TURSO_DATABASE_URL,
+    ...(process.env.TURSO_AUTH_TOKEN ? { authToken: process.env.TURSO_AUTH_TOKEN } : {}),
   });
-}
 
-function all(sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.all(sql, params, (err, rows) => {
-      if (err) return reject(err);
-      resolve(rows);
+  run = async (sql, params = []) => {
+    const rs = await db.execute({ sql, args: params });
+    return { lastID: Number(rs.lastInsertRowid), changes: rs.rowsAffected };
+  };
+
+  get = async (sql, params = []) => {
+    const rs = await db.execute({ sql, args: params });
+    return rs.rows[0];
+  };
+
+  all = async (sql, params = []) => {
+    const rs = await db.execute({ sql, args: params });
+    return rs.rows;
+  };
+} else {
+  const sqlite3 = require('sqlite3').verbose();
+  db = new sqlite3.Database(path.join(__dirname, 'wallet.db'));
+
+  run = (sql, params = []) =>
+    new Promise((resolve, reject) => {
+      db.run(sql, params, function (err) {
+        if (err) return reject(err);
+        resolve({ lastID: this.lastID, changes: this.changes });
+      });
     });
-  });
+
+  get = (sql, params = []) =>
+    new Promise((resolve, reject) => {
+      db.get(sql, params, (err, row) => {
+        if (err) return reject(err);
+        resolve(row);
+      });
+    });
+
+  all = (sql, params = []) =>
+    new Promise((resolve, reject) => {
+      db.all(sql, params, (err, rows) => {
+        if (err) return reject(err);
+        resolve(rows);
+      });
+    });
 }
 
 async function init() {
