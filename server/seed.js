@@ -8,7 +8,7 @@ async function seed() {
   for (const h of HOTELS) {
     const exists = await get('SELECT id FROM hotels WHERE name = ?', [h.name]);
     if (!exists) {
-      await run('INSERT INTO hotels (name, city, country, image, description) VALUES (?, ?, ?, ?, ?)', [h.name, h.city, h.country, h.image, h.description]);
+      await run('INSERT INTO hotels (name, city, country, image, description) VALUES (?, ?, ?, ?, ?)', [h.name, h.city, h.country, '', h.description]);
       added++;
     }
   }

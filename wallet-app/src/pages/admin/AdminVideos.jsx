@@ -128,7 +128,11 @@ export default function AdminHotels() {
               <tr key={item.id}>
                 <td>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    {item.image && <img src={item.image} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover' }} />}
+                    {item.image ? (
+                      <img src={item.image} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ width: 36, height: 36, borderRadius: 6, background: 'linear-gradient(135deg,#00578b,#4dbeff)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>🏨</div>
+                    )}
                     {item.name}
                   </div>
                 </td>

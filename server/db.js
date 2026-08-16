@@ -164,14 +164,14 @@ async function init() {
   }
 
   const hotelsVersion = await get('SELECT value FROM settings WHERE key = ?', ['hotels_version']);
-  if (!hotelsVersion || hotelsVersion.value !== '2') {
+  if (!hotelsVersion || hotelsVersion.value !== '3') {
     await run('DELETE FROM hotels');
     for (const h of HOTELS) {
       await run('INSERT INTO hotels (name, city, country, image, description) VALUES (?, ?, ?, ?, ?)',
-        [h.name, h.city, h.country, h.image, h.description]);
+        [h.name, h.city, h.country, '', h.description]);
     }
     await run("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = ?",
-      ['hotels_version', '2', '2']);
+      ['hotels_version', '3', '3']);
   }
 }
 

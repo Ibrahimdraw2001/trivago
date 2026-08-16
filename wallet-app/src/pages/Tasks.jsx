@@ -84,12 +84,19 @@ export default function Tasks() {
       ) : (
         data.hotels.map((hotel) => (
           <div className="hotel-card" key={hotel.id}>
-            <div className="hotel-img">
-              <img
-                src={hotel.image || 'https://picsum.photos/seed/hotel-placeholder/400/300'}
-                alt={hotel.name}
-                onError={(e) => { e.target.src = 'https://picsum.photos/seed/hotel-placeholder/400/300'; }}
-              />
+            <div className={`hotel-img ${hotel.image ? 'has-img' : ''}`}>
+              <div className="hotel-cover">
+                <span className="hotel-cover-icon">🏨</span>
+                <span className="hotel-cover-name">{hotel.name}</span>
+                <span className="hotel-cover-city">{hotel.city} · {hotel.country}</span>
+              </div>
+              {hotel.image && (
+                <img
+                  src={hotel.image}
+                  alt={hotel.name}
+                  onError={(e) => { e.target.style.display = 'none'; }}
+                />
+              )}
             </div>
             <div className="hotel-body">
               <div className="hotel-head">
