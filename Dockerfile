@@ -8,7 +8,7 @@ RUN cd wallet-app && npm run build
 FROM node:20
 WORKDIR /app
 COPY server/package*.json ./server/
-RUN cd server && npm ci
+RUN cd server && npm ci && npm rebuild sqlite3 --build-from-source
 COPY server/ ./server/
 COPY --from=build /app/wallet-app/dist ./server/dist
 WORKDIR /app/server
