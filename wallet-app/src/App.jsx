@@ -1,0 +1,63 @@
+import { Routes, Route, Navigate } from 'react-router-dom';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Layout from './components/Layout';
+import Wallet from './pages/Wallet';
+import Deposit from './pages/Deposit';
+import Withdraw from './pages/Withdraw';
+import Levels from './pages/Levels';
+import Tasks from './pages/Tasks';
+import Transactions from './pages/Transactions';
+import { ProtectedRoute, AdminRoute } from './components/Routes';
+import AdminLogin from './pages/admin/AdminLogin';
+import AdminLayout from './pages/admin/AdminLayout';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminDeposits from './pages/admin/AdminDeposits';
+import AdminWithdrawals from './pages/admin/AdminWithdrawals';
+import AdminVideos from './pages/admin/AdminVideos';
+import AdminLevels from './pages/admin/AdminLevels';
+import AdminUsers from './pages/admin/AdminUsers';
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/admin/login" element={<AdminLogin />} />
+
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Wallet />} />
+        <Route path="deposit" element={<Deposit />} />
+        <Route path="withdraw" element={<Withdraw />} />
+        <Route path="levels" element={<Levels />} />
+        <Route path="tasks" element={<Tasks />} />
+        <Route path="transactions" element={<Transactions />} />
+      </Route>
+
+      <Route
+        path="/admin"
+        element={
+          <AdminRoute>
+            <AdminLayout />
+          </AdminRoute>
+        }
+      >
+        <Route index element={<AdminDashboard />} />
+        <Route path="deposits" element={<AdminDeposits />} />
+        <Route path="withdrawals" element={<AdminWithdrawals />} />
+        <Route path="hotels" element={<AdminVideos />} />
+        <Route path="levels" element={<AdminLevels />} />
+        <Route path="users" element={<AdminUsers />} />
+      </Route>
+
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
