@@ -1,0 +1,17 @@
+FROM node:20 AS build
+WORKDIR /app
+COPY wallet-app/package*.json ./wallet-app/
+RUN cd wallet-app && npm ci
+COPY wallet-app/ ./wallet-app/
+RUN cd wallet-app && npm run build
+
+FROM node:20
+WORKDIR /app
+COPY server/package*.json ./server/
+RUN cd server && npm ci
+COPY server/ ./server/
+COPY --from=build /app/wallet-app/dist ./server/dist
+WORKDIR /app/server
+ENV NODE_ENV=production
+EXPOSE 3000
+CMD ["node", "index.js"]
