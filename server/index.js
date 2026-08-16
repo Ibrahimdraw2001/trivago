@@ -20,11 +20,14 @@ app.use('/api/transactions', require('./routes/transactions'));
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api/admin', require('./routes/admin'));
 
-const distDir = path.join(__dirname, '..', 'wallet-app', 'dist');
-if (fs.existsSync(distDir)) {
+app.use('/api', (req, res) => res.status(404).json({ code: 404, message: 'غير موجود' }));
+
+const distCandidates = [path.join(__dirname, 'dist'), path.join(__dirname, '..', 'wallet-app', 'dist')];
+const distDir = distCandidates.find((d) => fs.existsSync(d));
+
+if (distDir) {
   app.use(express.static(distDir));
-  app.get('/{*splat}', (req, res) => {
-    if (req.path.startsWith('/api')) return res.status(404).json({ code: 404, message: 'غير موجود' });
+  app.use((req, res) => {
     res.sendFile(path.join(distDir, 'index.html'));
   });
 }
