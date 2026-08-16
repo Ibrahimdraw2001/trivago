@@ -57,7 +57,7 @@ export default function Deposit() {
         </h3>
         <p>بعد التحويل، انسخ رقم العملية (TxID) من محفظتك وأدخله بالأسفل لإرسال طلب الإيداع</p>
         <div className="wallet-number-row">
-          {wallet || 'جارٍ التحميل...'}
+          <span className="wallet-address">{wallet || 'جارٍ التحميل...'}</span>
           <button className="btn-primary" type="button" onClick={copyWallet}>
             {copied ? 'تم النسخ ✓' : 'نسخ'}
           </button>
