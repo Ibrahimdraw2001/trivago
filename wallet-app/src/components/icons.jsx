@@ -91,3 +91,33 @@ export const StarIcon = (p) =>
   svg(p, (
     <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z" />
   ));
+
+export const MoonIcon = (p) =>
+  svg(p, (
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+  ));
+
+export const SunIcon = (p) =>
+  svg(p, (
+    <>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+    </>
+  ));
+
+export const UserIcon = (p) =>
+  svg(p, (
+    <>
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21c0-4 3.6-6 8-6s8 2 8 6" />
+    </>
+  ));
+
+export const KeyIcon = (p) =>
+  svg(p, (
+    <>
+      <circle cx="7.5" cy="15.5" r="4.5" />
+      <path d="M21 2l-9.6 9.6" />
+      <path d="M15.5 7.5l3 3L22 7l-3-3" />
+    </>
+  ));

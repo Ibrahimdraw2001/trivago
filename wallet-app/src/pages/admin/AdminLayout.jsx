@@ -1,9 +1,12 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
+import { MoonIcon, SunIcon } from '../../components/icons';
 import TrivagoLogo from '../../components/TrivagoLogo';
 
 export default function AdminLayout() {
   const { user, logout } = useAuth();
+  const { dark, toggle } = useTheme();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -26,6 +29,9 @@ export default function AdminLayout() {
           <NavLink to="/admin/levels">إدارة المستويات</NavLink>
           <NavLink to="/admin/users">المستخدمون</NavLink>
         </nav>
+        <button className="theme-toggle" type="button" onClick={toggle} aria-label="تبديل الوضع الليلي" style={{ width: 32, height: 32, margin: '10px auto 0', flexShrink: 0 }}>
+          {dark ? <SunIcon /> : <MoonIcon />}
+        </button>
         <div className="logout-btn" onClick={handleLogout}>
           خروج الأدمن ({user?.username})
         </div>

@@ -5,6 +5,7 @@ export const api = {
     register: (data) => request('/auth/register', { method: 'POST', body: data }),
     login: (data) => request('/auth/login', { method: 'POST', body: data }),
     profile: () => request('/auth/profile'),
+    changePassword: (data) => request('/auth/change-password', { method: 'POST', body: data }),
   },
   deposits: {
     submit: (data) => request('/deposits', { method: 'POST', body: data }),

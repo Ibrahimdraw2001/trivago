@@ -9,6 +9,7 @@ import Withdraw from './pages/Withdraw';
 import Levels from './pages/Levels';
 import Tasks from './pages/Tasks';
 import Transactions from './pages/Transactions';
+import Account from './pages/Account';
 import { ProtectedRoute, AdminRoute } from './components/Routes';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminLayout from './pages/admin/AdminLayout';
@@ -41,6 +42,7 @@ export default function App() {
         <Route path="levels" element={<Levels />} />
         <Route path="tasks" element={<Tasks />} />
         <Route path="transactions" element={<Transactions />} />
+        <Route path="account" element={<Account />} />
       </Route>
 
       <Route

@@ -17,6 +17,10 @@ export default function Register() {
       setError('كلمتا المرور غير متطابقتين');
       return;
     }
+    if (!/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/.test(form.password)) {
+      setError('كلمة المرور يجب أن تكون 6 أحرف على الأقل وتحتوي أحرفاً وأرقاماً فقط');
+      return;
+    }
     setLoading(true);
     try {
       await register({ username: form.username, password: form.password });
@@ -45,6 +49,7 @@ export default function Register() {
           <div className="form-group">
             <label>كلمة المرور</label>
             <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
+            <div className="form-hint">6 أحرف على الأقل، أحرف وأرقام فقط.</div>
           </div>
           <div className="form-group">
             <label>تأكيد كلمة المرور</label>

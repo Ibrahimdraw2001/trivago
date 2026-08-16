@@ -1,10 +1,12 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { HomeIcon, TaskIcon, CrownIcon, DepositIcon, WithdrawIcon } from './icons';
+import { useTheme } from '../context/ThemeContext';
+import { HomeIcon, TaskIcon, CrownIcon, DepositIcon, WithdrawIcon, MoonIcon, SunIcon } from './icons';
 import TrivagoLogo from './TrivagoLogo';
 
 export default function Layout() {
   const { user, logout } = useAuth();
+  const { dark, toggle } = useTheme();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -16,9 +18,17 @@ export default function Layout() {
     <div className="phone-app">
       <header className="topbar">
         <TrivagoLogo height={26} />
-        <button className="topbar-logout" onClick={handleLogout}>
-          {user?.username} · خروج
-        </button>
+        <div className="topbar-actions">
+          <button className="theme-toggle" type="button" onClick={toggle} aria-label="تبديل الوضع الليلي">
+            {dark ? <SunIcon /> : <MoonIcon />}
+          </button>
+          <button className="topbar-btn" type="button" onClick={() => navigate('/account')}>
+            {user?.username}
+          </button>
+          <button className="topbar-btn" type="button" onClick={handleLogout}>
+            خروج
+          </button>
+        </div>
       </header>
 
       <main className="page-content">

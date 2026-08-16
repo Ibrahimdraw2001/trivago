@@ -3,14 +3,16 @@ const bcrypt = require('bcryptjs');
 const { run, get } = require('../db');
 const { sign, authUser } = require('../middleware/auth');
 
+const PASSWORD_RE = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
+
 router.post('/register', async (req, res) => {
   try {
     const { username, password } = req.body;
     if (!username || !password) {
       return res.status(400).json({ code: 400, message: 'اسم المستخدم وكلمة المرور مطلوبان' });
     }
-    if (password.length < 6) {
-      return res.status(400).json({ code: 400, message: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' });
+    if (!PASSWORD_RE.test(password)) {
+      return res.status(400).json({ code: 400, message: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل وتحتوي أحرفاً وأرقاماً فقط' });
     }
     const exists = await get('SELECT id FROM users WHERE username = ?', [username]);
     if (exists) {
@@ -52,6 +54,25 @@ router.get('/profile', authUser, async (req, res) => {
     [req.user.id]
   );
   res.json({ code: 0, data: user });
+});
+
+router.post('/change-password', authUser, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const user = await get('SELECT * FROM users WHERE id = ?', [req.user.id]);
+    if (!user) return res.status(404).json({ code: 404, message: 'المستخدم غير موجود' });
+    if (!bcrypt.compareSync(currentPassword || '', user.password)) {
+      return res.status(400).json({ code: 400, message: 'كلمة المرور الحالية غير صحيحة' });
+    }
+    if (!PASSWORD_RE.test(newPassword || '')) {
+      return res.status(400).json({ code: 400, message: 'كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل وتحتوي أحرفاً وأرقاماً فقط' });
+    }
+    const hash = bcrypt.hashSync(String(newPassword), 10);
+    await run('UPDATE users SET password = ? WHERE id = ?', [hash, user.id]);
+    res.json({ code: 0, message: 'تم تغيير كلمة المرور بنجاح' });
+  } catch (err) {
+    res.status(500).json({ code: 500, message: 'حدث خطأ في تغيير كلمة المرور' });
+  }
 });
 
 module.exports = router;
