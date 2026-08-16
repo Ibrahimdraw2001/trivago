@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../api';
+import { useToast } from '../../context/ToastContext';
 
 const EMPTY = { name: '', price: '', dailyVideos: '', rewardPerVideo: '' };
 
 export default function AdminLevels() {
+  const { notify } = useToast();
   const [items, setItems] = useState([]);
   const [form, setForm] = useState(EMPTY);
   const [editing, setEditing] = useState(null);
@@ -30,14 +32,17 @@ export default function AdminLevels() {
       };
       if (editing) {
         await api.admin.updateLevel(editing, data);
+        notify('تم تحديث المستوى');
       } else {
         await api.admin.addLevel(data);
+        notify('تمت إضافة المستوى');
       }
       setForm(EMPTY);
       setEditing(null);
       load();
     } catch (err) {
       setError(err.message);
+      notify(err.message, 'error');
     }
   };
 
@@ -54,8 +59,13 @@ export default function AdminLevels() {
 
   const remove = async (id) => {
     if (!confirm('هل أنت متأكد من حذف هذا المستوى؟')) return;
-    await api.admin.deleteLevel(id).catch((err) => alert(err.message));
-    load();
+    try {
+      await api.admin.deleteLevel(id);
+      notify('تم حذف المستوى');
+      load();
+    } catch (err) {
+      notify(err.message, 'error');
+    }
   };
 
   if (loading) return <div className="center-loading">جارٍ التحميل...</div>;

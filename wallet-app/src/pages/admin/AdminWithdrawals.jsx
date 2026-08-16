@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../api';
+import { useToast } from '../../context/ToastContext';
 
 export default function AdminWithdrawals() {
+  const { notify } = useToast();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -15,11 +17,16 @@ export default function AdminWithdrawals() {
 
   const act = async (id, action) => {
     try {
-      if (action === 'approve') await api.admin.approveWithdrawal(id);
-      else await api.admin.rejectWithdrawal(id);
+      if (action === 'approve') {
+        await api.admin.approveWithdrawal(id);
+        notify('تمت الموافقة على السحب');
+      } else {
+        await api.admin.rejectWithdrawal(id);
+        notify('تم رفض السحب وإرجاع المبلغ');
+      }
       load();
     } catch (err) {
-      alert(err.message);
+      notify(err.message, 'error');
     }
   };
 

@@ -26,9 +26,12 @@ export const api = {
   settings: {
     depositWallet: () => request('/settings/deposit-wallet'),
     updateDepositWallet: (data) => request('/settings/deposit-wallet', { method: 'PUT', body: data }),
+    announcement: () => request('/settings/announcement'),
+    updateAnnouncement: (data) => request('/settings/announcement', { method: 'PUT', body: data }),
   },
   admin: {
     stats: () => request('/admin/stats'),
+    changePassword: (data) => request('/admin/password', { method: 'PUT', body: data }),
     users: () => request('/admin/users'),
     updateUser: (id, data) => request(`/admin/users/${id}`, { method: 'PUT', body: data }),
     deposits: (status) => request(`/admin/deposits${status ? `?status=${status}` : ''}`),

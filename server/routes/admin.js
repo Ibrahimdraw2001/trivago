@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const bcrypt = require('bcryptjs');
 const { run, get, all } = require('../db');
 const { authUser, authAdmin } = require('../middleware/auth');
 
@@ -153,19 +154,19 @@ router.get('/hotels', async (req, res) => {
 });
 
 router.post('/hotels', async (req, res) => {
-  const { name, city, image, description } = req.body;
+  const { name, city, country, image, description } = req.body;
   if (!name) return res.status(400).json({ code: 400, message: 'اسم الفندق مطلوب' });
-  const result = await run('INSERT INTO hotels (name, city, image, description) VALUES (?, ?, ?, ?)',
-    [name, city || '', image || '', description || '']);
+  const result = await run('INSERT INTO hotels (name, city, country, image, description) VALUES (?, ?, ?, ?, ?)',
+    [name, city || '', country || '', image || '', description || '']);
   res.json({ code: 0, data: { id: result.lastID }, message: 'تمت إضافة الفندق' });
 });
 
 router.put('/hotels/:id', async (req, res) => {
-  const { name, city, image, description, active } = req.body;
+  const { name, city, country, image, description, active } = req.body;
   const hotel = await get('SELECT id FROM hotels WHERE id = ?', [req.params.id]);
   if (!hotel) return res.status(404).json({ code: 404, message: 'الفندق غير موجود' });
-  await run('UPDATE hotels SET name = ?, city = ?, image = ?, description = ?, active = ? WHERE id = ?',
-    [name, city || '', image || '', description || '', active ? 1 : 0, req.params.id]);
+  await run('UPDATE hotels SET name = ?, city = ?, country = ?, image = ?, description = ?, active = ? WHERE id = ?',
+    [name, city || '', country || '', image || '', description || '', active ? 1 : 0, req.params.id]);
   res.json({ code: 0, message: 'تم تحديث الفندق' });
 });
 
@@ -208,6 +209,25 @@ router.get('/transactions', async (req, res) => {
     `SELECT t.*, u.username FROM transactions t JOIN users u ON t.user_id = u.id ORDER BY t.created_at DESC LIMIT 100`
   );
   res.json({ code: 0, data: rows });
+});
+
+router.put('/password', async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const admin = await get('SELECT * FROM users WHERE id = ?', [req.user.id]);
+    if (!admin) return res.status(404).json({ code: 404, message: 'المستخدم غير موجود' });
+    if (!bcrypt.compareSync(currentPassword || '', admin.password)) {
+      return res.status(400).json({ code: 400, message: 'كلمة المرور الحالية غير صحيحة' });
+    }
+    if (!newPassword || String(newPassword).length < 8) {
+      return res.status(400).json({ code: 400, message: 'كلمة المرور الجديدة يجب أن تكون 8 أحرف على الأقل' });
+    }
+    const hash = bcrypt.hashSync(String(newPassword), 10);
+    await run('UPDATE users SET password = ? WHERE id = ?', [hash, admin.id]);
+    res.json({ code: 0, message: 'تم تغيير كلمة المرور بنجاح' });
+  } catch (err) {
+    res.status(500).json({ code: 500, message: 'حدث خطأ في تغيير كلمة المرور' });
+  }
 });
 
 module.exports = router;

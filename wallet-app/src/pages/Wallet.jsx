@@ -8,11 +8,13 @@ export default function Wallet() {
   const { user, refresh } = useAuth();
   const [deposits, setDeposits] = useState([]);
   const [withdrawals, setWithdrawals] = useState([]);
+  const [announcement, setAnnouncement] = useState(null);
 
   useEffect(() => {
     refresh().catch(() => {});
     api.deposits.mine().then(setDeposits).catch(() => {});
     api.withdrawals.mine().then(setWithdrawals).catch(() => {});
+    api.settings.announcement().then(setAnnouncement).catch(() => {});
   }, []);
 
   const all = [
@@ -24,6 +26,12 @@ export default function Wallet() {
 
   return (
     <div>
+      {announcement && announcement.active && announcement.text && (
+        <div className="announcement-banner">
+          <span>📢</span>
+          <span>{announcement.text}</span>
+        </div>
+      )}
       <div className="balance-card">
         <div className="label">رصيدك الحالي</div>
         <div className="amount">{user?.balance ?? 0}</div>

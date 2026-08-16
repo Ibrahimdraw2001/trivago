@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { api } from '../api';
 
 export default function Levels() {
   const { user, refresh } = useAuth();
+  const { notify } = useToast();
   const [levels, setLevels] = useState([]);
   const [message, setMessage] = useState(null);
   const [error, setError] = useState('');
@@ -18,9 +20,11 @@ export default function Levels() {
     try {
       await api.levels.purchase({ levelId });
       setMessage('تم تفعيل المستوى بنجاح');
+      notify('تم تفعيل المستوى بنجاح');
       refresh().catch(() => {});
     } catch (err) {
       setError(err.message);
+      notify(err.message, 'error');
     }
   };
 

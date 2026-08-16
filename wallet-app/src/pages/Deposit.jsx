@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
+import { useToast } from '../context/ToastContext';
 import { WalletIcon } from '../components/icons';
 
 export default function Deposit() {
+  const { notify } = useToast();
   const [wallet, setWallet] = useState('');
   const [copied, setCopied] = useState(false);
   const [form, setForm] = useState({ amount: '', shamTxnId: '' });
@@ -37,9 +39,11 @@ export default function Deposit() {
         shamTxnId: form.shamTxnId,
       });
       setMessage('تم إرسال طلب الإيداع بنجاح. بانتظار موافقة الأدمن.');
+      notify('تم إرسال طلب الإيداع بنجاح');
       setForm({ amount: '', shamTxnId: '' });
     } catch (err) {
       setError(err.message);
+      notify(err.message, 'error');
     } finally {
       setLoading(false);
     }

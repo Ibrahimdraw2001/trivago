@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../api';
+import { useToast } from '../../context/ToastContext';
 
 export default function AdminUsers() {
+  const { notify } = useToast();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
@@ -41,10 +43,12 @@ export default function AdminUsers() {
         balance: Number(form.balance),
         levelId: form.levelId ? Number(form.levelId) : null,
       });
+      notify('تم تحديث بيانات المستخدم');
       cancel();
       load();
     } catch (err) {
       setError(err.message);
+      notify(err.message, 'error');
     } finally {
       setSaving(false);
     }

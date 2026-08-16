@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { api } from '../api';
 import { HotelIcon, MapPinIcon, StarIcon } from '../components/icons';
 
 export default function Tasks() {
   const { refresh } = useAuth();
+  const { notify } = useToast();
   const [data, setData] = useState(null);
   const [selected, setSelected] = useState({});
   const [error, setError] = useState('');
@@ -23,11 +25,13 @@ export default function Tasks() {
     setError('');
     setLoadingRate(true);
     try {
-      await api.tasks.rate({ hotelId, stars: selected[hotelId] });
+      const result = await api.tasks.rate({ hotelId, stars: selected[hotelId] });
+      notify(`تم تقييم الفندق وحصلت على ${result.reward} ل.س`);
       refresh().catch(() => {});
       load();
     } catch (err) {
       setError(err.message);
+      notify(err.message, 'error');
     } finally {
       setLoadingRate(false);
     }
@@ -92,7 +96,7 @@ export default function Tasks() {
                 <div className="hotel-title">
                   <h4>{hotel.name}</h4>
                   <span className="hotel-city">
-                    <MapPinIcon /> {hotel.city}
+                    <MapPinIcon /> {hotel.city} · {hotel.country}
                   </span>
                 </div>
                 {hotel.rating_count > 0 && (

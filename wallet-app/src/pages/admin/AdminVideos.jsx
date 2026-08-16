@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../api';
+import { useToast } from '../../context/ToastContext';
 
-const EMPTY = { name: '', city: '', image: '', description: '', active: 1 };
+const EMPTY = { name: '', city: '', country: '', image: '', description: '', active: 1 };
 
 export default function AdminHotels() {
+  const { notify } = useToast();
   const [items, setItems] = useState([]);
   const [form, setForm] = useState(EMPTY);
   const [editing, setEditing] = useState(null);
@@ -24,27 +26,42 @@ export default function AdminHotels() {
     try {
       if (editing) {
         await api.admin.updateHotel(editing, form);
+        notify('تم تحديث الفندق');
       } else {
         await api.admin.addHotel(form);
+        notify('تمت إضافة الفندق');
       }
       setForm(EMPTY);
       setEditing(null);
       load();
     } catch (err) {
       setError(err.message);
+      notify(err.message, 'error');
     }
   };
 
   const startEdit = (item) => {
     setEditing(item.id);
-    setForm({ name: item.name, city: item.city, image: item.image, description: item.description, active: item.active });
+    setForm({
+      name: item.name,
+      city: item.city,
+      country: item.country,
+      image: item.image,
+      description: item.description,
+      active: item.active,
+    });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const remove = async (id) => {
     if (!confirm('هل أنت متأكد من حذف هذا الفندق؟')) return;
-    await api.admin.deleteHotel(id).catch((err) => alert(err.message));
-    load();
+    try {
+      await api.admin.deleteHotel(id);
+      notify('تم حذف الفندق');
+      load();
+    } catch (err) {
+      notify(err.message, 'error');
+    }
   };
 
   if (loading) return <div className="center-loading">جارٍ التحميل...</div>;
@@ -60,7 +77,11 @@ export default function AdminHotels() {
         </div>
         <div className="form-group">
           <label>المدينة</label>
-          <input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} placeholder="مثال: دمشق" />
+          <input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} placeholder="مثال: دبي" />
+        </div>
+        <div className="form-group">
+          <label>الدولة</label>
+          <input value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} placeholder="مثال: الإمارات" />
         </div>
         <div className="form-group">
           <label>رابط الصورة</label>
@@ -91,6 +112,7 @@ export default function AdminHotels() {
             <tr>
               <th>الفندق</th>
               <th>المدينة</th>
+              <th>الدولة</th>
               <th>الوصف</th>
               <th>الحالة</th>
               <th>إجراءات</th>
@@ -99,7 +121,7 @@ export default function AdminHotels() {
           <tbody>
             {items.length === 0 && (
               <tr>
-                <td colSpan="5" style={{ textAlign: 'center', color: '#6b7280' }}>لا توجد فنادق</td>
+                <td colSpan="6" style={{ textAlign: 'center', color: '#6b7280' }}>لا توجد فنادق</td>
               </tr>
             )}
             {items.map((item) => (
@@ -111,6 +133,7 @@ export default function AdminHotels() {
                   </div>
                 </td>
                 <td>{item.city}</td>
+                <td>{item.country}</td>
                 <td>{item.description}</td>
                 <td>{item.active ? 'نشط' : 'غير نشط'}</td>
                 <td>

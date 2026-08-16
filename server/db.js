@@ -147,7 +147,7 @@ async function init() {
 
   const admin = await get('SELECT id FROM users WHERE role = ?', ['admin']);
   if (!admin) {
-    const hash = bcrypt.hashSync('admin123', 10);
+    const hash = bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'admin123', 10);
     await run('INSERT INTO users (username, password, role) VALUES (?, ?, ?)', ['admin', hash, 'admin']);
   }
 
@@ -158,11 +158,20 @@ async function init() {
     await run('INSERT INTO levels (name, price, daily_videos, reward_per_video) VALUES (?, ?, ?, ?)', ['المستوى 3', 5000, 8, 8]);
   }
 
-  const hotelCount = await get('SELECT COUNT(*) as count FROM hotels');
-  if (hotelCount.count === 0) {
+  const hotelCols = await all('PRAGMA table_info(hotels)');
+  if (hotelCols && !hotelCols.some((c) => c.name === 'country')) {
+    await run("ALTER TABLE hotels ADD COLUMN country TEXT NOT NULL DEFAULT ''");
+  }
+
+  const hotelsVersion = await get('SELECT value FROM settings WHERE key = ?', ['hotels_version']);
+  if (!hotelsVersion || hotelsVersion.value !== '2') {
+    await run('DELETE FROM hotels');
     for (const h of HOTELS) {
-      await run('INSERT INTO hotels (name, city, image, description) VALUES (?, ?, ?, ?)', [h.name, h.city, h.image, h.description]);
+      await run('INSERT INTO hotels (name, city, country, image, description) VALUES (?, ?, ?, ?, ?)',
+        [h.name, h.city, h.country, h.image, h.description]);
     }
+    await run("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = ?",
+      ['hotels_version', '2', '2']);
   }
 }
 

@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { api } from '../api';
+import { useToast } from '../context/ToastContext';
 
 const MIN_WITHDRAW = 500;
 
 export default function Withdraw() {
+  const { notify } = useToast();
   const [form, setForm] = useState({ amount: '', shamCashNumber: '' });
   const [message, setMessage] = useState(null);
   const [error, setError] = useState('');
@@ -19,9 +21,11 @@ export default function Withdraw() {
         shamCashNumber: form.shamCashNumber,
       });
       setMessage('تم إرسال طلب السحب. سيحول الأدمن المبلغ عبر شام كاش ثم يعتمد الطلب.');
+      notify('تم إرسال طلب السحب');
       setForm({ amount: '', shamCashNumber: '' });
     } catch (err) {
       setError(err.message);
+      notify(err.message, 'error');
     } finally {
       setLoading(false);
     }

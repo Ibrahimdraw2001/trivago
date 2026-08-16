@@ -3,13 +3,34 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const rateLimit = require('express-rate-limit');
 const { init } = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.set('trust proxy', 1);
 app.use(cors());
 app.use(express.json());
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 600,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { code: 429, message: 'طلبات كثيرة جداً، حاول بعد قليل' },
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { code: 429, message: 'محاولات كثيرة، انتظر 15 دقيقة ثم أعد المحاولة' },
+});
+
+app.use('/api', apiLimiter);
+app.use('/api/auth', authLimiter);
 
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/deposits', require('./routes/deposits'));

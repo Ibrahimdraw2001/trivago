@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../api';
+import { useToast } from '../../context/ToastContext';
 
 export default function AdminDeposits() {
+  const { notify } = useToast();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -15,11 +17,16 @@ export default function AdminDeposits() {
 
   const act = async (id, action) => {
     try {
-      if (action === 'approve') await api.admin.approveDeposit(id);
-      else await api.admin.rejectDeposit(id);
+      if (action === 'approve') {
+        await api.admin.approveDeposit(id);
+        notify('تمت الموافقة على الإيداع وإضافة الرصيد');
+      } else {
+        await api.admin.rejectDeposit(id);
+        notify('تم رفض طلب الإيداع');
+      }
       load();
     } catch (err) {
-      alert(err.message);
+      notify(err.message, 'error');
     }
   };
 
