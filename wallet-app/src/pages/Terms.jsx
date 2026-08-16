@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import TrivagoLogo from '../components/TrivagoLogo';
 
 const SECTIONS = [
@@ -68,6 +69,10 @@ const SECTIONS = [
 ];
 
 export default function Terms() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const loggedIn = !!user;
+
   return (
     <div className="auth-page terms-page">
       <div className="terms-card">
@@ -85,7 +90,15 @@ export default function Terms() {
             </ul>
           </section>
         ))}
-        <Link to="/login" className="btn-primary terms-back">العودة لتسجيل الدخول</Link>
+        {loggedIn ? (
+          <button className="btn-primary terms-back" type="button" onClick={() => navigate(-1)}>
+            العودة إلى القائمة السابقة
+          </button>
+        ) : (
+          <Link to="/login" className="btn-primary terms-back">
+            العودة لتسجيل الدخول
+          </Link>
+        )}
       </div>
     </div>
   );
