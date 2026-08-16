@@ -84,7 +84,7 @@ export default function AdminDashboard() {
           </div>
           <div className="stat-card">
             <div className="stat-label">إجمالي أرصدة المستخدمين</div>
-            <div className="stat-value">{stats.totalBalance} ل.س</div>
+            <div className="stat-value">{stats.totalBalance}$</div>
           </div>
           <div className="stat-card">
             <div className="stat-label">عدد الفنادق</div>
@@ -94,16 +94,16 @@ export default function AdminDashboard() {
       </div>
 
       <div className="card">
-        <h2>حساب الإيداع عبر شام كاش</h2>
+        <h2>عنوان محفظة USDT (شبكة BEP-20)</h2>
         <p style={{ color: '#6b7280', fontSize: 13, marginBottom: 12 }}>
-          الرقم الذي يظهر للمستخدمين في صفحة الإيداع لتحويل المبالغ إليه.
+          العنوان الذي يظهر للمستخدمين في صفحة الإيداع لتحويل USDT إليه.
         </p>
         {walletErr && <div className="alert alert-error">{walletErr}</div>}
         {walletMsg && <div className="alert alert-success">{walletMsg}</div>}
         <form onSubmit={saveWallet} className="inline-form">
           <div className="form-group">
-            <label>رقم المحفظة</label>
-            <input value={wallet} onChange={(e) => setWallet(e.target.value)} placeholder="مثال: 0991234567" required />
+            <label>عنوان المحفظة</label>
+            <input value={wallet} onChange={(e) => setWallet(e.target.value)} placeholder="مثال: 0x1a2b3c4d5e6f..." required />
           </div>
           <button className="btn-primary" type="submit">حفظ</button>
         </form>

@@ -48,9 +48,9 @@ export default function Transactions() {
                   </td>
                   <td style={{ fontWeight: 700, color: item.amount >= 0 ? '#16a34a' : '#dc2626' }}>
                     {item.amount >= 0 ? '+' : ''}
-                    {item.amount}
+                    {item.amount}$
                   </td>
-                  <td>{item.balance_after}</td>
+                  <td>{item.balance_after}$</td>
                   <td style={{ color: '#9aa3b2', fontSize: 12 }}>{item.created_at.slice(0, 16)}</td>
                 </tr>
               ))}

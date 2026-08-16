@@ -40,8 +40,8 @@ export default function AdminWithdrawals() {
           <thead>
             <tr>
               <th>المستخدم</th>
-              <th>رقم محفظة شام كاش</th>
-              <th>المبلغ</th>
+              <th>عنوان محفظة USDT (BEP-20)</th>
+              <th>المبلغ ($)</th>
               <th>الحالة</th>
               <th>التاريخ</th>
               <th>إجراءات</th>
@@ -56,8 +56,8 @@ export default function AdminWithdrawals() {
             {items.map((item) => (
               <tr key={item.id}>
                 <td>{item.username}</td>
-                <td>{item.sham_cash_number}</td>
-                <td>{item.amount} ل.س</td>
+                <td>{item.wallet_address || item.sham_cash_number}</td>
+                <td>{item.amount}$</td>
                 <td>
                   <span className={`status-${item.status}`}>{item.status}</span>
                 </td>

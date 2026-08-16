@@ -142,7 +142,9 @@ async function init() {
 
   const depositWallet = await get('SELECT value FROM settings WHERE key = ?', ['deposit_wallet']);
   if (!depositWallet) {
-    await run('INSERT INTO settings (key, value) VALUES (?, ?)', ['deposit_wallet', '0991234567']);
+    await run('INSERT INTO settings (key, value) VALUES (?, ?)', ['deposit_wallet', '0x1111111111111111111111111111111111111111']);
+  } else if (depositWallet.value === '0991234567') {
+    await run("UPDATE settings SET value = ? WHERE key = 'deposit_wallet'", ['0x1111111111111111111111111111111111111111']);
   }
 
   const admin = await get('SELECT id FROM users WHERE role = ?', ['admin']);
@@ -153,10 +155,31 @@ async function init() {
 
   const levelCount = await get('SELECT COUNT(*) as count FROM levels');
   if (levelCount.count === 0) {
-    await run('INSERT INTO levels (name, price, daily_videos, reward_per_video) VALUES (?, ?, ?, ?)', ['المستوى 1', 1000, 2, 5]);
-    await run('INSERT INTO levels (name, price, daily_videos, reward_per_video) VALUES (?, ?, ?, ?)', ['المستوى 2', 2500, 4, 6]);
-    await run('INSERT INTO levels (name, price, daily_videos, reward_per_video) VALUES (?, ?, ?, ?)', ['المستوى 3', 5000, 8, 8]);
+    await run('INSERT INTO levels (name, price, daily_videos, reward_per_video) VALUES (?, ?, ?, ?)', ['المستوى 1', 30, 2, 1]);
+    await run('INSERT INTO levels (name, price, daily_videos, reward_per_video) VALUES (?, ?, ?, ?)', ['المستوى 2', 60, 4, 1]);
+    await run('INSERT INTO levels (name, price, daily_videos, reward_per_video) VALUES (?, ?, ?, ?)', ['المستوى 3', 100, 4, 2]);
   }
+
+  const levelsVersion = await get("SELECT value FROM settings WHERE key = 'levels_version'");
+  if (!levelsVersion || levelsVersion.value !== '2') {
+    await run('UPDATE levels SET price = 30, daily_videos = 2, reward_per_video = 1 WHERE name = ?', ['المستوى 1']);
+    await run('UPDATE levels SET price = 60, daily_videos = 4, reward_per_video = 1 WHERE name = ?', ['المستوى 2']);
+    await run('UPDATE levels SET price = 100, daily_videos = 4, reward_per_video = 2 WHERE name = ?', ['المستوى 3']);
+    await run("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = ?",
+      ['levels_version', '2', '2']);
+  }
+
+  const depositCols = await all('PRAGMA table_info(deposits)');
+  if (!depositCols.some((c) => c.name === 'txn_id')) {
+    await run('ALTER TABLE deposits ADD COLUMN txn_id TEXT');
+  }
+  await run('UPDATE deposits SET txn_id = sham_txn_id WHERE txn_id IS NULL');
+
+  const withdrawalCols = await all('PRAGMA table_info(withdrawals)');
+  if (!withdrawalCols.some((c) => c.name === 'wallet_address')) {
+    await run('ALTER TABLE withdrawals ADD COLUMN wallet_address TEXT');
+  }
+  await run('UPDATE withdrawals SET wallet_address = sham_cash_number WHERE wallet_address IS NULL');
 
   const hotelCols = await all('PRAGMA table_info(hotels)');
   if (hotelCols && !hotelCols.some((c) => c.name === 'country')) {

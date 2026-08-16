@@ -34,7 +34,7 @@ export default function Wallet() {
       )}
       <div className="balance-card">
         <div className="label">رصيدك الحالي</div>
-        <div className="amount">{user?.balance ?? 0}</div>
+        <div className="amount">{user?.balance ?? 0}$</div>
         <span className="level-chip">
           {user?.level_name ? `${user.level_name} ✓` : 'لم تشترك بأي مستوى بعد'}
         </span>
@@ -80,7 +80,7 @@ export default function Wallet() {
                     <td>{item.kind}</td>
                     <td style={{ fontWeight: 700, color: item.sign === '+' ? '#16a34a' : '#dc2626' }}>
                       {item.sign}
-                      {item.amount}
+                      {item.amount}$
                     </td>
                     <td>
                       <span className={`status-${item.status}`}>{item.status}</span>

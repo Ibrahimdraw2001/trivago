@@ -94,7 +94,7 @@ router.post('/deposits/:id/approve', async (req, res) => {
   await run('UPDATE deposits SET status = ?, processed_at = datetime(\'now\'), admin_id = ? WHERE id = ?',
     ['approved', req.user.id, deposit.id]);
   await run('INSERT INTO transactions (user_id, type, amount, balance_after, description) VALUES (?, ?, ?, ?, ?)',
-    [deposit.user_id, 'deposit', deposit.amount, newBalance, 'إيداع عبر شام كاش']);
+    [deposit.user_id, 'deposit', deposit.amount, newBalance, 'إيداع عبر USDT']);
 
   res.json({ code: 0, message: 'تمت الموافقة على الإيداع وإضافة الرصيد' });
 });
@@ -129,7 +129,7 @@ router.post('/withdrawals/:id/approve', async (req, res) => {
 
   await run('UPDATE withdrawals SET status = ?, processed_at = datetime(\'now\'), admin_id = ? WHERE id = ?',
     ['approved', req.user.id, withdrawal.id]);
-  res.json({ code: 0, message: 'تم تحويل المبلغ عبر شام كاش والموافقة على السحب' });
+  res.json({ code: 0, message: 'تم تحويل المبلغ عبر USDT والموافقة على السحب' });
 });
 
 router.post('/withdrawals/:id/reject', async (req, res) => {

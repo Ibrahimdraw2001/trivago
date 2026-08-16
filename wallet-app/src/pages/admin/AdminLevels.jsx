@@ -80,16 +80,16 @@ export default function AdminLevels() {
           <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
         </div>
         <div className="form-group">
-          <label>السعر (ل.س)</label>
-          <input type="number" min="0" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
+          <label>السعر ($)</label>
+          <input type="number" min="0" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
         </div>
         <div className="form-group">
           <label>فنادق يومياً</label>
           <input type="number" min="0" value={form.dailyVideos} onChange={(e) => setForm({ ...form, dailyVideos: e.target.value })} required />
         </div>
         <div className="form-group">
-          <label>مكافأة كل تقييم (ل.س)</label>
-          <input type="number" min="0" value={form.rewardPerVideo} onChange={(e) => setForm({ ...form, rewardPerVideo: e.target.value })} required />
+          <label>مكافأة كل تقييم ($)</label>
+          <input type="number" min="0" step="0.01" value={form.rewardPerVideo} onChange={(e) => setForm({ ...form, rewardPerVideo: e.target.value })} required />
         </div>
         <button className="btn-primary" type="submit">{editing ? 'حفظ التعديلات' : 'إضافة'}</button>
         {editing && (
@@ -115,10 +115,10 @@ export default function AdminLevels() {
             {items.map((item) => (
               <tr key={item.id}>
                 <td>{item.name}</td>
-                <td>{item.price} ل.س</td>
+                <td>{item.price}$</td>
                 <td>{item.daily_videos}</td>
-                <td>{item.reward_per_video} ل.س</td>
-                <td>{item.daily_videos * item.reward_per_video} ل.س</td>
+                <td>{item.reward_per_video}$</td>
+                <td>{item.daily_videos * item.reward_per_video}$</td>
                 <td>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button className="btn-gray btn-sm" onClick={() => startEdit(item)}>تعديل</button>

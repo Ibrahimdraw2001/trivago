@@ -26,7 +26,7 @@ export default function Tasks() {
     setLoadingRate(true);
     try {
       const result = await api.tasks.rate({ hotelId, stars: selected[hotelId] });
-      notify(`تم تقييم الفندق وحصلت على ${result.reward} ل.س`);
+      notify(`تم تقييم الفندق وحصلت على ${result.reward}$`);
       refresh().catch(() => {});
       load();
     } catch (err) {
@@ -68,7 +68,7 @@ export default function Tasks() {
         <div className="progress-bar">
           <div className="fill" style={{ width: `${percent}%` }} />
         </div>
-        <p style={{ color: '#9aa3b2', fontSize: 12 }}>مكافأة كل تقييم: {data.rewardPerHotel} ل.س</p>
+        <p style={{ color: '#9aa3b2', fontSize: 12 }}>مكافأة كل تقييم: {data.rewardPerHotel}$</p>
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}

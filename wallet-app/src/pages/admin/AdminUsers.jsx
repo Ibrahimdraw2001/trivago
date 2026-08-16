@@ -71,8 +71,8 @@ export default function AdminUsers() {
                 <input value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} required />
               </div>
               <div className="form-group">
-                <label>الرصيد (ل.س)</label>
-                <input type="number" min="0" step="0.5" value={form.balance} onChange={(e) => setForm({ ...form, balance: e.target.value })} required />
+                <label>الرصيد ($)</label>
+                <input type="number" min="0" step="0.01" value={form.balance} onChange={(e) => setForm({ ...form, balance: e.target.value })} required />
               </div>
               <div className="form-group">
                 <label>المستوى</label>
@@ -115,7 +115,7 @@ export default function AdminUsers() {
               <tr key={item.id}>
                 <td>{item.username}</td>
                 <td>{item.level_name || 'لا يوجد'}</td>
-                <td>{item.balance} ل.س</td>
+                <td>{item.balance}$</td>
                 <td>{item.created_at}</td>
                 <td>
                   <button className="btn-gray btn-sm" onClick={() => startEdit(item)}>تعديل</button>

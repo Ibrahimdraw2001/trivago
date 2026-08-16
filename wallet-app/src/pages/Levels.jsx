@@ -38,10 +38,10 @@ export default function Levels() {
           return (
             <div className={`level-card ${current ? 'current' : ''}`} key={level.id}>
               <div className="level-name">{level.name}</div>
-              <div className="price">{level.price} ل.س</div>
+              <div className="price">{level.price}$</div>
               <p>فنادق يومياً: {level.daily_videos}</p>
-              <p>مكافأة كل تقييم: {level.reward_per_video} ل.س</p>
-              <p>المكافأة اليومية: {level.daily_videos * level.reward_per_video} ل.س</p>
+              <p>مكافأة كل تقييم: {level.reward_per_video}$</p>
+              <p>المكافأة اليومية: {level.daily_videos * level.reward_per_video}$</p>
               <div style={{ marginTop: 12 }}>
                 {current ? (
                   <span className="status-approved" style={{ display: 'block', textAlign: 'center', padding: '10px' }}>

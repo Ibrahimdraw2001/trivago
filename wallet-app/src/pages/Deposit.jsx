@@ -7,7 +7,7 @@ export default function Deposit() {
   const { notify } = useToast();
   const [wallet, setWallet] = useState('');
   const [copied, setCopied] = useState(false);
-  const [form, setForm] = useState({ amount: '', shamTxnId: '' });
+  const [form, setForm] = useState({ amount: '', txnId: '' });
   const [message, setMessage] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -36,11 +36,11 @@ export default function Deposit() {
     try {
       await api.deposits.submit({
         amount: Number(form.amount),
-        shamTxnId: form.shamTxnId,
+        txnId: form.txnId,
       });
       setMessage('تم إرسال طلب الإيداع بنجاح. بانتظار موافقة الأدمن.');
       notify('تم إرسال طلب الإيداع بنجاح');
-      setForm({ amount: '', shamTxnId: '' });
+      setForm({ amount: '', txnId: '' });
     } catch (err) {
       setError(err.message);
       notify(err.message, 'error');
@@ -53,9 +53,9 @@ export default function Deposit() {
     <div>
       <div className="deposit-wallet-box">
         <h3>
-          <WalletIcon /> حوّل إلى حساب شام كاش التالي
+          <WalletIcon /> حوّل إلى محفظة USDT التالية (شبكة BEP-20)
         </h3>
-        <p>بعد التحويل، انسخ رقم العملية وأدخله بالأسفل لإرسال طلب الإيداع</p>
+        <p>بعد التحويل، انسخ رقم العملية (TxID) من محفظتك وأدخله بالأسفل لإرسال طلب الإيداع</p>
         <div className="wallet-number-row">
           {wallet || 'جارٍ التحميل...'}
           <button className="btn-primary" type="button" onClick={copyWallet}>
@@ -70,12 +70,12 @@ export default function Deposit() {
         {message && <div className="alert alert-success">{message}</div>}
         <form onSubmit={submit}>
           <div className="form-group">
-            <label>المبلغ المراد إيداعه (ل.س)</label>
-            <input type="number" min="1" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} required />
+            <label>المبلغ المراد إيداعه ($)</label>
+            <input type="number" min="1" step="0.01" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} required />
           </div>
           <div className="form-group">
-            <label>رقم عملية الدفع من شام كاش</label>
-            <input value={form.shamTxnId} onChange={(e) => setForm({ ...form, shamTxnId: e.target.value })} placeholder="مثال: SC20260815001" required />
+            <label>رقم العملية (TxID) من محفظتك</label>
+            <input value={form.txnId} onChange={(e) => setForm({ ...form, txnId: e.target.value })} placeholder="مثال: 0x1a2b3c4d..." required />
           </div>
           <button className="btn-primary" type="submit" disabled={loading}>
             {loading ? 'جارٍ الإرسال...' : 'إرسال طلب الإيداع'}

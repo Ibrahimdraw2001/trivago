@@ -40,8 +40,8 @@ export default function AdminDeposits() {
           <thead>
             <tr>
               <th>المستخدم</th>
-              <th>المبلغ</th>
-              <th>رقم العملية</th>
+              <th>المبلغ ($)</th>
+              <th>رقم العملية (TxID)</th>
               <th>الحالة</th>
               <th>التاريخ</th>
               <th>إجراءات</th>
@@ -56,8 +56,8 @@ export default function AdminDeposits() {
             {items.map((item) => (
               <tr key={item.id}>
                 <td>{item.username}</td>
-                <td>{item.amount} ل.س</td>
-                <td>{item.sham_txn_id}</td>
+                <td>{item.amount}$</td>
+                <td>{item.txn_id || item.sham_txn_id}</td>
                 <td>
                   <span className={`status-${item.status}`}>{item.status}</span>
                 </td>
