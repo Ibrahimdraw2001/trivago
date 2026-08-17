@@ -174,6 +174,11 @@ async function init() {
       ['levels_version', '2', '2']);
   }
 
+  const userCols = await all('PRAGMA table_info(users)');
+  if (!userCols.some((c) => c.name === 'level_date')) {
+    await run("ALTER TABLE users ADD COLUMN level_date TEXT");
+  }
+
   const depositCols = await all('PRAGMA table_info(deposits)');
   if (!depositCols.some((c) => c.name === 'txn_id')) {
     await run('ALTER TABLE deposits ADD COLUMN txn_id TEXT');

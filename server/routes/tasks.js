@@ -18,10 +18,13 @@ router.get('/', authUser, async (req, res) => {
   }
 
   const today = todayStr();
-  const ratedRows = await all(
-    `SELECT hotel_id FROM ratings WHERE user_id = ? AND date(created_at) = ?`,
-    [req.user.id, today]
-  );
+  const levelPurchasedToday = user.level_date === today;
+  const ratedRows = levelPurchasedToday
+    ? []
+    : await all(
+        `SELECT hotel_id FROM ratings WHERE user_id = ? AND date(created_at) = ?`,
+        [req.user.id, today]
+      );
   const ratedIds = ratedRows.map((r) => r.hotel_id);
   const ratedCount = ratedIds.length;
 
