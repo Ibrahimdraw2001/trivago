@@ -516,6 +516,11 @@ th {
   border-color: #16a34a;
 }
 
+.level-card.locked {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 .level-card .level-name {
   font-size: 15px;
   font-weight: 700;

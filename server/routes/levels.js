@@ -18,6 +18,12 @@ router.post('/purchase', authUser, async (req, res) => {
     if (user.level_id === level.id) {
       return res.status(400).json({ code: 400, message: 'أنت مشترك بهذا المستوى بالفعل' });
     }
+    if (user.level_id) {
+      const currentLevel = await get('SELECT * FROM levels WHERE id = ?', [user.level_id]);
+      if (currentLevel && currentLevel.price >= level.price) {
+        return res.status(400).json({ code: 400, message: 'لا يمكنك شراء مستوى أقل من المستوى الحالي' });
+      }
+    }
 
     const result = await run(
       'UPDATE users SET balance = balance - ?, level_id = ? WHERE id = ? AND balance >= ?',

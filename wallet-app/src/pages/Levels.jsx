@@ -39,8 +39,10 @@ export default function Levels() {
       <div className="grid-3">
         {levels.map((level) => {
           const current = user?.level_id === level.id;
+          const currentLevelObj = levels.find((l) => l.id === user?.level_id);
+          const locked = currentLevelObj && currentLevelObj.price >= level.price && !current;
           return (
-            <div className={`level-card ${current ? 'current' : ''}`} key={level.id}>
+            <div className={`level-card ${current ? 'current' : ''} ${locked ? 'locked' : ''}`} key={level.id}>
               <div className="level-name">{level.name}</div>
               <div className="price">{level.price}$</div>
               <p>فنادق يومياً: {level.daily_videos}</p>
@@ -50,6 +52,10 @@ export default function Levels() {
                 {current ? (
                   <span className="status-approved" style={{ display: 'block', textAlign: 'center', padding: '10px' }}>
                     مشترك حالياً
+                  </span>
+                ) : locked ? (
+                  <span style={{ display: 'block', textAlign: 'center', padding: '10px', color: '#6b7280', fontSize: 13 }}>
+                    تجاوزت هذا المستوى
                   </span>
                 ) : (
                   <button className="btn-primary" onClick={() => purchase(level.id)} disabled={purchasing === level.id}>
