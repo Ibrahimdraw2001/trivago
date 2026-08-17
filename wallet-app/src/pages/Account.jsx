@@ -1,8 +1,9 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { api } from '../api';
-import { KeyIcon } from '../components/icons';
+import { KeyIcon, InviteIcon } from '../components/icons';
 
 export default function Account() {
   const { user, refresh } = useAuth();
@@ -58,6 +59,17 @@ export default function Account() {
             <strong>{user?.level_name || 'لا يوجد'}</strong>
           </div>
         </div>
+      </div>
+
+      <div className="m-card" style={{ textAlign: 'center' }}>
+        <div style={{ marginBottom: 8 }}>
+          <InviteIcon style={{ width: 20, height: 20, verticalAlign: -4, marginLeft: 6 }} />
+          <strong>كود الدعوة الخاص بك</strong>
+        </div>
+        <div className="referral-code">{user?.referral_code || '—'}</div>
+        <Link to="/referrals" className="btn-gray" style={{ display: 'inline-block', marginTop: 12, padding: '8px 20px', fontSize: 13, textDecoration: 'none' }}>
+          عرض الدعوات
+        </Link>
       </div>
 
       <div className="m-card">

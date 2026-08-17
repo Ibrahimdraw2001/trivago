@@ -25,6 +25,10 @@ export const api = {
     rate: (data) => request('/tasks/rate', { method: 'POST', body: data }),
   },
   transactions: (page = 1, limit = 20) => request(`/transactions?page=${page}&limit=${limit}`),
+  referrals: {
+    list: () => request('/referrals'),
+    stats: () => request('/referrals/stats'),
+  },
   settings: {
     depositWallet: () => request('/settings/deposit-wallet'),
     updateDepositWallet: (data) => request('/settings/deposit-wallet', { method: 'PUT', body: data }),

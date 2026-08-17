@@ -10,6 +10,12 @@ function nowStr() {
   return new Date().toISOString().slice(0, 19).replace('T', ' ');
 }
 
+const REFERRAL_REWARDS = {
+  30: { inviter: 5, invitee: 2 },
+  60: { inviter: 10, invitee: 4 },
+  100: { inviter: 15, invitee: 5 },
+};
+
 router.get('/', async (req, res) => {
   const rows = await all('SELECT * FROM levels ORDER BY price');
   res.json({ code: 0, data: rows });
@@ -44,6 +50,32 @@ router.post('/purchase', authUser, async (req, res) => {
     const newBalance = user.balance - level.price;
     await run('INSERT INTO transactions (user_id, type, amount, balance_after, description) VALUES (?, ?, ?, ?, ?)',
       [user.id, 'level', -level.price, newBalance, `شراء ${level.name}`]);
+
+    if (user.referred_by) {
+      const referral = await get(
+        "SELECT id FROM referrals WHERE inviter_id = ? AND invitee_id = ? AND status = 'pending'",
+        [user.referred_by, user.id]
+      );
+      if (referral) {
+        const rewards = REFERRAL_REWARDS[level.price] || { inviter: 5, invitee: 2 };
+
+        await run(
+          "UPDATE referrals SET status = 'completed', inviter_reward = ?, invitee_reward = ?, completed_at = datetime('now') WHERE id = ?",
+          [rewards.inviter, rewards.invitee, referral.id]
+        );
+
+        await run('UPDATE users SET balance = balance + ? WHERE id = ?', [rewards.inviter, user.referred_by]);
+        const inviter = await get('SELECT balance FROM users WHERE id = ?', [user.referred_by]);
+        await run('INSERT INTO transactions (user_id, type, amount, balance_after, description) VALUES (?, ?, ?, ?, ?)',
+          [user.referred_by, 'referral_reward', rewards.inviter, inviter.balance, `مكافأة دعوة: ${user.username}`]);
+
+        await run('UPDATE users SET balance = balance + ? WHERE id = ?', [rewards.invitee, user.id]);
+        const updatedUser = await get('SELECT balance FROM users WHERE id = ?', [user.id]);
+        await run('INSERT INTO transactions (user_id, type, amount, balance_after, description) VALUES (?, ?, ?, ?, ?)',
+          [user.id, 'referral_bonus', rewards.invitee, updatedUser.balance, 'مكافأة ترحيبية من الدعوة']);
+      }
+    }
+
     res.json({ code: 0, data: { balance: newBalance, level_id: level.id }, message: `تم تفعيل ${level.name}` });
   } catch (err) {
     res.status(500).json({ code: 500, message: 'حدث خطأ في شراء المستوى' });

@@ -6,7 +6,7 @@ import TrivagoLogo from '../components/TrivagoLogo';
 export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ username: '', password: '', confirm: '' });
+  const [form, setForm] = useState({ username: '', password: '', confirm: '', referralCode: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
@@ -24,7 +24,7 @@ export default function Register() {
     }
     setLoading(true);
     try {
-      await register({ username: form.username, password: form.password });
+      await register({ username: form.username, password: form.password, referralCode: form.referralCode || undefined });
       navigate('/');
     } catch (err) {
       setError(err.message);
@@ -58,6 +58,10 @@ export default function Register() {
           <div className="form-group">
             <label>تأكيد كلمة المرور</label>
             <input type={showPass ? 'text' : 'password'} value={form.confirm} onChange={(e) => setForm({ ...form, confirm: e.target.value })} required />
+          </div>
+          <div className="form-group">
+            <label>كود الدعوة (اختياري)</label>
+            <input value={form.referralCode} onChange={(e) => setForm({ ...form, referralCode: e.target.value.toUpperCase() })} placeholder="مثال: A1B2C3" maxLength={6} style={{ textTransform: 'uppercase', letterSpacing: 2 }} />
           </div>
           <button className="btn-primary" type="submit" disabled={loading}>
             {loading ? 'جارٍ الإنشاء...' : 'إنشاء الحساب'}

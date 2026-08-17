@@ -63,6 +63,7 @@ app.use('/api/levels', require('./routes/levels'));
 app.use('/api/tasks', require('./routes/tasks'));
 app.use('/api/transactions', require('./routes/transactions'));
 app.use('/api/settings', require('./routes/settings'));
+app.use('/api/referrals', require('./routes/referrals'));
 app.use('/api/admin', require('./routes/admin'));
 
 app.use('/api', (req, res) => res.status(404).json({ code: 404, message: 'غير موجود' }));

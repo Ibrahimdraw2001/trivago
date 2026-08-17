@@ -1224,3 +1224,47 @@ th {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+.referral-code {
+  display: inline-block;
+  font-family: monospace;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  color: var(--primary);
+  background: var(--surface);
+  border: 2px dashed var(--primary);
+  border-radius: 12px;
+  padding: 10px 20px;
+  user-select: all;
+}
+
+.referral-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.referral-stat {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 12px 8px;
+  text-align: center;
+}
+
+.referral-stat-value {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.referral-stat-label {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 4px;
+}
+
+@media (max-width: 480px) {
+  .referral-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

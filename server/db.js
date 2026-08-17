@@ -1,6 +1,14 @@
 const path = require('path');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const { HOTELS } = require('./hotels-data');
+
+const CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+function generateRefCode() {
+  let code = '';
+  for (let i = 0; i < 6; i++) code += CHARS[crypto.randomInt(CHARS.length)];
+  return code;
+}
 
 const USE_REMOTE = !!process.env.TURSO_DATABASE_URL;
 
@@ -181,6 +189,34 @@ async function init() {
   if (!userCols.some((c) => c.name === 'level_purchased_at')) {
     await run("ALTER TABLE users ADD COLUMN level_purchased_at TEXT");
   }
+  if (!userCols.some((c) => c.name === 'referral_code')) {
+    await run("ALTER TABLE users ADD COLUMN referral_code TEXT");
+  }
+  if (!userCols.some((c) => c.name === 'referred_by')) {
+    await run("ALTER TABLE users ADD COLUMN referred_by INTEGER");
+  }
+
+  await run(`CREATE TABLE IF NOT EXISTS referrals (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    inviter_id INTEGER NOT NULL,
+    invitee_id INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending',
+    inviter_reward REAL NOT NULL DEFAULT 0,
+    invitee_reward REAL NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    completed_at TEXT
+  )`);
+
+  const usersNeedingCode = await all('SELECT id FROM users WHERE referral_code IS NULL');
+  for (const u of usersNeedingCode) {
+    let code;
+    let dup;
+    do {
+      code = generateRefCode();
+      dup = await get('SELECT id FROM users WHERE referral_code = ?', [code]);
+    } while (dup);
+    await run('UPDATE users SET referral_code = ? WHERE id = ?', [code, u.id]);
+  }
 
   const depositCols = await all('PRAGMA table_info(deposits)');
   if (!depositCols.some((c) => c.name === 'txn_id')) {
@@ -211,4 +247,4 @@ async function init() {
   }
 }
 
-module.exports = { db, run, get, all, init };
+module.exports = { db, run, get, all, init, generateRefCode };

@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const bcrypt = require('bcryptjs');
-const { run, get } = require('../db');
+const { run, get, generateRefCode } = require('../db');
 const { sign, authUser } = require('../middleware/auth');
 
 const PASSWORD_RE = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
@@ -19,7 +19,7 @@ function setAuthCookie(res, token) {
 
 router.post('/register', async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, password, referralCode } = req.body;
     if (!username || !password) {
       return res.status(400).json({ code: 400, message: 'اسم المستخدم وكلمة المرور مطلوبان' });
     }
@@ -30,9 +30,37 @@ router.post('/register', async (req, res) => {
     if (exists) {
       return res.status(400).json({ code: 400, message: 'اسم المستخدم مستخدم بالفعل' });
     }
+
+    let inviterId = null;
+    if (referralCode && String(referralCode).trim()) {
+      const inviter = await get('SELECT id FROM users WHERE referral_code = ?', [String(referralCode).trim().toUpperCase()]);
+      if (!inviter) {
+        return res.status(400).json({ code: 400, message: 'كود الدعوة غير صحيح' });
+      }
+      inviterId = inviter.id;
+    }
+
+    let code;
+    let codeDup;
+    do {
+      code = generateRefCode();
+      codeDup = await get('SELECT id FROM users WHERE referral_code = ?', [code]);
+    } while (codeDup);
+
     const hash = bcrypt.hashSync(password, 10);
-    const result = await run('INSERT INTO users (username, password) VALUES (?, ?)', [username, hash]);
-    const user = await get('SELECT id, username, role, balance, level_id FROM users WHERE id = ?', [result.lastID]);
+    const result = await run(
+      'INSERT INTO users (username, password, referral_code, referred_by) VALUES (?, ?, ?, ?)',
+      [username, hash, code, inviterId]
+    );
+
+    if (inviterId) {
+      await run(
+        'INSERT INTO referrals (inviter_id, invitee_id) VALUES (?, ?)',
+        [inviterId, result.lastID]
+      );
+    }
+
+    const user = await get('SELECT id, username, role, balance, level_id, referral_code FROM users WHERE id = ?', [result.lastID]);
     const token = sign(user);
     setAuthCookie(res, token);
     res.json({ code: 0, data: { user } });
@@ -67,7 +95,7 @@ router.post('/logout', (req, res) => {
 
 router.get('/profile', authUser, async (req, res) => {
   const user = await get(
-    `SELECT u.id, u.username, u.role, u.balance, u.level_id, l.name as level_name
+    `SELECT u.id, u.username, u.role, u.balance, u.level_id, u.referral_code, l.name as level_name
      FROM users u LEFT JOIN levels l ON u.level_id = l.id
      WHERE u.id = ?`,
     [req.user.id]
