@@ -9,6 +9,7 @@ export default function Login() {
   const [form, setForm] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPass, setShowPass] = useState(false);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -40,7 +41,10 @@ export default function Login() {
           </div>
           <div className="form-group">
             <label>كلمة المرور</label>
-            <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
+            <div style={{ position: 'relative' }}>
+              <input type={showPass ? 'text' : 'password'} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required style={{ width: '100%', paddingRight: 40 }} />
+              <button type="button" onClick={() => setShowPass(!showPass)} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#9aa3b2', cursor: 'pointer', fontSize: 18 }}>{showPass ? '🙈' : '👁'}</button>
+            </div>
           </div>
           <button className="btn-primary" type="submit" disabled={loading}>
             {loading ? 'جارٍ الدخول...' : 'دخول'}

@@ -9,6 +9,7 @@ export default function Levels() {
   const [levels, setLevels] = useState([]);
   const [message, setMessage] = useState(null);
   const [error, setError] = useState('');
+  const [purchasing, setPurchasing] = useState(null);
 
   useEffect(() => {
     api.levels.getAll().then(setLevels).catch(() => {});
@@ -17,6 +18,7 @@ export default function Levels() {
   const purchase = async (levelId) => {
     setError('');
     setMessage('');
+    setPurchasing(levelId);
     try {
       await api.levels.purchase({ levelId });
       setMessage('تم تفعيل المستوى بنجاح');
@@ -25,6 +27,8 @@ export default function Levels() {
     } catch (err) {
       setError(err.message);
       notify(err.message, 'error');
+    } finally {
+      setPurchasing(null);
     }
   };
 
@@ -48,8 +52,8 @@ export default function Levels() {
                     مشترك حالياً
                   </span>
                 ) : (
-                  <button className="btn-primary" onClick={() => purchase(level.id)}>
-                    اشترِ الآن
+                  <button className="btn-primary" onClick={() => purchase(level.id)} disabled={purchasing === level.id}>
+                    {purchasing === level.id ? 'جارٍ الشراء...' : 'اشترِ الآن'}
                   </button>
                 )}
               </div>

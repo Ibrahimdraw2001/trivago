@@ -9,6 +9,7 @@ export default function Register() {
   const [form, setForm] = useState({ username: '', password: '', confirm: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPass, setShowPass] = useState(false);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -48,12 +49,15 @@ export default function Register() {
           </div>
           <div className="form-group">
             <label>كلمة المرور</label>
-            <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
+            <div style={{ position: 'relative' }}>
+              <input type={showPass ? 'text' : 'password'} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required style={{ width: '100%', paddingRight: 40 }} />
+              <button type="button" onClick={() => setShowPass(!showPass)} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#9aa3b2', cursor: 'pointer', fontSize: 18 }}>{showPass ? '🙈' : '👁'}</button>
+            </div>
             <div className="form-hint">6 أحرف على الأقل، أحرف وأرقام فقط.</div>
           </div>
           <div className="form-group">
             <label>تأكيد كلمة المرور</label>
-            <input type="password" value={form.confirm} onChange={(e) => setForm({ ...form, confirm: e.target.value })} required />
+            <input type={showPass ? 'text' : 'password'} value={form.confirm} onChange={(e) => setForm({ ...form, confirm: e.target.value })} required />
           </div>
           <button className="btn-primary" type="submit" disabled={loading}>
             {loading ? 'جارٍ الإنشاء...' : 'إنشاء الحساب'}

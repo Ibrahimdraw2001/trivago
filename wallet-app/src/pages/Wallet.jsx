@@ -2,7 +2,13 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api';
-import { DepositIcon, WithdrawIcon, CrownIcon, TaskIcon, HistoryIcon } from '../components/icons';
+import { DepositIcon, WithdrawIcon, CrownIcon, TaskIcon } from '../components/icons';
+
+const STATUS_LABELS = {
+  pending: 'قيد المراجعة',
+  approved: 'تمت الموافقة',
+  rejected: 'مرفوض',
+};
 
 export default function Wallet() {
   const { user, refresh } = useAuth();
@@ -83,7 +89,7 @@ export default function Wallet() {
                       {item.amount}$
                     </td>
                     <td>
-                      <span className={`status-${item.status}`}>{item.status}</span>
+                      <span className={`status-${item.status}`}>{STATUS_LABELS[item.status] || item.status}</span>
                     </td>
                     <td style={{ color: '#9aa3b2', fontSize: 12 }}>{item.created_at.slice(0, 16)}</td>
                   </tr>

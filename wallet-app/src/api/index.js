@@ -23,7 +23,7 @@ export const api = {
     today: () => request('/tasks'),
     rate: (data) => request('/tasks/rate', { method: 'POST', body: data }),
   },
-  transactions: () => request('/transactions'),
+  transactions: (page = 1, limit = 20) => request(`/transactions?page=${page}&limit=${limit}`),
   settings: {
     depositWallet: () => request('/settings/deposit-wallet'),
     updateDepositWallet: (data) => request('/settings/deposit-wallet', { method: 'PUT', body: data }),

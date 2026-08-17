@@ -11,6 +11,7 @@ export default function AdminUsers() {
   const [levels, setLevels] = useState([]);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [search, setSearch] = useState('');
 
   const load = () => {
     api.admin.users().then(setItems).catch(() => {}).finally(() => setLoading(false));
@@ -60,6 +61,16 @@ export default function AdminUsers() {
     <div className="card">
       <h2>المستخدمون</h2>
 
+      <div style={{ marginBottom: 12 }}>
+        <input
+          type="text"
+          placeholder="بحث بالاسم..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #374151', background: '#1f2937', color: '#fff', fontSize: 14 }}
+        />
+      </div>
+
       {editing && (
         <div className="modal-backdrop" onClick={cancel}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -106,12 +117,12 @@ export default function AdminUsers() {
             </tr>
           </thead>
           <tbody>
-            {items.length === 0 && (
+            {items.filter((item) => !search || item.username.includes(search)).length === 0 && (
               <tr>
-                <td colSpan="5" style={{ textAlign: 'center', color: '#6b7280' }}>لا يوجد مستخدمون</td>
+                <td colSpan="5" style={{ textAlign: 'center', color: '#6b7280' }}>{search ? 'لا توجد نتائج للبحث' : 'لا يوجد مستخدمون'}</td>
               </tr>
             )}
-            {items.map((item) => (
+            {items.filter((item) => !search || item.username.includes(search)).map((item) => (
               <tr key={item.id}>
                 <td>{item.username}</td>
                 <td>{item.level_name || 'لا يوجد'}</td>

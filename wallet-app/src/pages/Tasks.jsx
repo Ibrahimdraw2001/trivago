@@ -11,6 +11,7 @@ export default function Tasks() {
   const [selected, setSelected] = useState({});
   const [error, setError] = useState('');
   const [loadingRate, setLoadingRate] = useState(false);
+  const [confirmHotel, setConfirmHotel] = useState(null);
 
   const load = () => {
     api.tasks.today().then(setData).catch(() => {});
@@ -130,13 +131,30 @@ export default function Tasks() {
                 className="btn-green"
                 type="button"
                 disabled={loadingRate || selected[hotel.id] === undefined}
-                onClick={() => rate(hotel.id)}
+                onClick={() => setConfirmHotel(hotel)}
               >
                 تقييم الفندق وإرسال
               </button>
             </div>
           </div>
         ))
+      )}
+      {confirmHotel && (
+        <div className="modal-backdrop" onClick={() => setConfirmHotel(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3>تأكيد التقييم</h3>
+            <p style={{ margin: '12px 0', color: '#9aa3b2' }}>
+              هل أنت متأكد من تقييم فندق <strong style={{ color: '#fff' }}>{confirmHotel.name}</strong> بـ <strong style={{ color: '#16a34a' }}>{selected[confirmHotel.id]}/10</strong> نجوم؟
+            </p>
+            <p style={{ fontSize: 12, color: '#6b7280' }}>لا يمكنك التراجع عن هذا التقييم.</p>
+            <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+              <button className="btn-green" disabled={loadingRate} onClick={() => { rate(confirmHotel.id); setConfirmHotel(null); }}>
+                {loadingRate ? 'جارٍ الإرسال...' : 'تأكيد'}
+              </button>
+              <button className="btn-gray" onClick={() => setConfirmHotel(null)}>إلغاء</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
