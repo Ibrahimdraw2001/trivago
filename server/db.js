@@ -149,7 +149,12 @@ async function init() {
 
   const admin = await get('SELECT id FROM users WHERE role = ?', ['admin']);
   if (!admin) {
-    const hash = bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'admin123', 10);
+    const adminPass = process.env.ADMIN_PASSWORD;
+    if (!adminPass) {
+      console.error('FATAL: ADMIN_PASSWORD is not set. Cannot create admin account.');
+      process.exit(1);
+    }
+    const hash = bcrypt.hashSync(adminPass, 10);
     await run('INSERT INTO users (username, password, role) VALUES (?, ?, ?)', ['admin', hash, 'admin']);
   }
 

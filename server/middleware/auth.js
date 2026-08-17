@@ -1,7 +1,11 @@
 const jwt = require('jsonwebtoken');
 const { get } = require('../db');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'wallet_secret_key';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  console.error('FATAL: JWT_SECRET is not set in environment variables.');
+  process.exit(1);
+}
 
 function sign(user) {
   return jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });

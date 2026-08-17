@@ -127,8 +127,14 @@ router.post('/withdrawals/:id/approve', async (req, res) => {
   if (!withdrawal) return res.status(404).json({ code: 404, message: 'الطلب غير موجود' });
   if (withdrawal.status !== 'pending') return res.status(400).json({ code: 400, message: 'تمت معالجة هذا الطلب مسبقاً' });
 
+  const user = await get('SELECT * FROM users WHERE id = ?', [withdrawal.user_id]);
+  const newBalance = user.balance - withdrawal.amount;
+  await run('UPDATE users SET balance = ? WHERE id = ?', [newBalance, user.id]);
   await run('UPDATE withdrawals SET status = ?, processed_at = datetime(\'now\'), admin_id = ? WHERE id = ?',
     ['approved', req.user.id, withdrawal.id]);
+  await run('INSERT INTO transactions (user_id, type, amount, balance_after, description) VALUES (?, ?, ?, ?, ?)',
+    [withdrawal.user_id, 'withdraw', -withdrawal.amount, newBalance, 'تم الموافقة على السحب وتحويل المبلغ']);
+
   res.json({ code: 0, message: 'تم تحويل المبلغ عبر USDT والموافقة على السحب' });
 });
 
@@ -163,10 +169,11 @@ router.post('/hotels', async (req, res) => {
 
 router.put('/hotels/:id', async (req, res) => {
   const { name, city, country, image, description, active } = req.body;
-  const hotel = await get('SELECT id FROM hotels WHERE id = ?', [req.params.id]);
+  const hotel = await get('SELECT id, active FROM hotels WHERE id = ?', [req.params.id]);
   if (!hotel) return res.status(404).json({ code: 404, message: 'الفندق غير موجود' });
+  const isActive = active !== undefined ? (active ? 1 : 0) : hotel.active;
   await run('UPDATE hotels SET name = ?, city = ?, country = ?, image = ?, description = ?, active = ? WHERE id = ?',
-    [name, city || '', country || '', image || '', description || '', active ? 1 : 0, req.params.id]);
+    [name, city || '', country || '', image || '', description || '', isActive, req.params.id]);
   res.json({ code: 0, message: 'تم تحديث الفندق' });
 });
 
