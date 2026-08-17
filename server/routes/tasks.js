@@ -19,12 +19,18 @@ router.get('/', authUser, async (req, res) => {
 
   const today = todayStr();
   const levelPurchasedToday = user.level_date === today;
-  const ratedRows = levelPurchasedToday
-    ? []
-    : await all(
-        `SELECT hotel_id FROM ratings WHERE user_id = ? AND date(created_at) = ?`,
-        [req.user.id, today]
-      );
+  let ratedRows;
+  if (levelPurchasedToday && user.level_purchased_at) {
+    ratedRows = await all(
+      `SELECT hotel_id FROM ratings WHERE user_id = ? AND date(created_at) = ? AND created_at >= ?`,
+      [req.user.id, today, user.level_purchased_at]
+    );
+  } else {
+    ratedRows = await all(
+      `SELECT hotel_id FROM ratings WHERE user_id = ? AND date(created_at) = ?`,
+      [req.user.id, today]
+    );
+  }
   const ratedIds = ratedRows.map((r) => r.hotel_id);
   const ratedCount = ratedIds.length;
 
@@ -77,6 +83,7 @@ router.post('/rate', authUser, async (req, res) => {
     }
 
     const today = todayStr();
+    const levelPurchasedToday = user.level_date === today;
 
     const dup = await get(
       'SELECT id FROM ratings WHERE user_id = ? AND hotel_id = ? AND date(created_at) = ?',
@@ -86,10 +93,18 @@ router.post('/rate', authUser, async (req, res) => {
       return res.status(400).json({ code: 400, message: 'لقد قيّمت هذا الفندق اليوم بالفعل' });
     }
 
-    const countToday = await get(
-      'SELECT COUNT(*) as count FROM ratings WHERE user_id = ? AND date(created_at) = ?',
-      [req.user.id, today]
-    );
+    let countToday;
+    if (levelPurchasedToday && user.level_purchased_at) {
+      countToday = await get(
+        'SELECT COUNT(*) as count FROM ratings WHERE user_id = ? AND date(created_at) = ? AND created_at >= ?',
+        [req.user.id, today, user.level_purchased_at]
+      );
+    } else {
+      countToday = await get(
+        'SELECT COUNT(*) as count FROM ratings WHERE user_id = ? AND date(created_at) = ?',
+        [req.user.id, today]
+      );
+    }
     if (countToday.count >= user.daily_videos) {
       return res.status(400).json({ code: 400, message: 'وصلت إلى الحد الأقصى لتقييمات اليوم' });
     }

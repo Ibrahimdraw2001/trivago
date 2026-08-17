@@ -178,6 +178,9 @@ async function init() {
   if (!userCols.some((c) => c.name === 'level_date')) {
     await run("ALTER TABLE users ADD COLUMN level_date TEXT");
   }
+  if (!userCols.some((c) => c.name === 'level_purchased_at')) {
+    await run("ALTER TABLE users ADD COLUMN level_purchased_at TEXT");
+  }
 
   const depositCols = await all('PRAGMA table_info(deposits)');
   if (!depositCols.some((c) => c.name === 'txn_id')) {

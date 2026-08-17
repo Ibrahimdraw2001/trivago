@@ -56,7 +56,10 @@ router.put('/users/:id', async (req, res) => {
 
     if (levelId !== undefined && levelId !== null && Number(levelId) !== user.level_id) {
       const level = await get('SELECT id FROM levels WHERE id = ?', [levelId]);
-      if (level) await run('UPDATE users SET level_id = ? WHERE id = ?', [Number(levelId), user.id]);
+      if (level) {
+        await run('UPDATE users SET level_id = ?, level_date = ?, level_purchased_at = ? WHERE id = ?',
+          [Number(levelId), new Date().toISOString().slice(0, 10), new Date().toISOString().slice(0, 19).replace('T', ' '), user.id]);
+      }
     }
 
     const updated = await get(
@@ -84,29 +87,46 @@ router.get('/deposits', async (req, res) => {
 });
 
 router.post('/deposits/:id/approve', async (req, res) => {
-  const deposit = await get('SELECT * FROM deposits WHERE id = ?', [req.params.id]);
-  if (!deposit) return res.status(404).json({ code: 404, message: 'الطلب غير موجود' });
-  if (deposit.status !== 'pending') return res.status(400).json({ code: 400, message: 'تمت معالجة هذا الطلب مسبقاً' });
+  try {
+    const deposit = await get('SELECT * FROM deposits WHERE id = ?', [req.params.id]);
+    if (!deposit) return res.status(404).json({ code: 404, message: 'الطلب غير موجود' });
+    if (deposit.status !== 'pending') return res.status(400).json({ code: 400, message: 'تمت معالجة هذا الطلب مسبقاً' });
 
-  const user = await get('SELECT * FROM users WHERE id = ?', [deposit.user_id]);
-  const newBalance = user.balance + deposit.amount;
-  await run('UPDATE users SET balance = ? WHERE id = ?', [newBalance, user.id]);
-  await run('UPDATE deposits SET status = ?, processed_at = datetime(\'now\'), admin_id = ? WHERE id = ?',
-    ['approved', req.user.id, deposit.id]);
-  await run('INSERT INTO transactions (user_id, type, amount, balance_after, description) VALUES (?, ?, ?, ?, ?)',
-    [deposit.user_id, 'deposit', deposit.amount, newBalance, 'إيداع عبر USDT']);
+    const result = await run(
+      "UPDATE deposits SET status = 'approved', processed_at = datetime('now'), admin_id = ? WHERE id = ? AND status = 'pending'",
+      [req.user.id, deposit.id]
+    );
+    if (result.changes === 0) {
+      return res.status(400).json({ code: 400, message: 'تمت معالجة هذا الطلب مسبقاً' });
+    }
 
-  res.json({ code: 0, message: 'تمت الموافقة على الإيداع وإضافة الرصيد' });
+    const balanceResult = await run(
+      'UPDATE users SET balance = balance + ? WHERE id = ?',
+      [deposit.amount, deposit.user_id]
+    );
+    const user = await get('SELECT balance FROM users WHERE id = ?', [deposit.user_id]);
+    await run('INSERT INTO transactions (user_id, type, amount, balance_after, description) VALUES (?, ?, ?, ?, ?)',
+      [deposit.user_id, 'deposit', deposit.amount, user.balance, 'إيداع عبر USDT']);
+
+    res.json({ code: 0, message: 'تمت الموافقة على الإيداع وإضافة الرصيد' });
+  } catch (err) {
+    res.status(500).json({ code: 500, message: 'حدث خطأ في الموافقة على الإيداع' });
+  }
 });
 
 router.post('/deposits/:id/reject', async (req, res) => {
-  const deposit = await get('SELECT * FROM deposits WHERE id = ?', [req.params.id]);
-  if (!deposit) return res.status(404).json({ code: 404, message: 'الطلب غير موجود' });
-  if (deposit.status !== 'pending') return res.status(400).json({ code: 400, message: 'تمت معالجة هذا الطلب مسبقاً' });
-
-  await run('UPDATE deposits SET status = ?, processed_at = datetime(\'now\'), admin_id = ? WHERE id = ?',
-    ['rejected', req.user.id, deposit.id]);
-  res.json({ code: 0, message: 'تم رفض طلب الإيداع' });
+  try {
+    const result = await run(
+      "UPDATE deposits SET status = 'rejected', processed_at = datetime('now'), admin_id = ? WHERE id = ? AND status = 'pending'",
+      [req.user.id, req.params.id]
+    );
+    if (result.changes === 0) {
+      return res.status(400).json({ code: 400, message: 'تمت معالجة هذا الطلب مسبقاً أو غير موجود' });
+    }
+    res.json({ code: 0, message: 'تم رفض طلب الإيداع' });
+  } catch (err) {
+    res.status(500).json({ code: 500, message: 'حدث خطأ في رفض الإيداع' });
+  }
 });
 
 router.get('/withdrawals', async (req, res) => {
@@ -123,35 +143,47 @@ router.get('/withdrawals', async (req, res) => {
 });
 
 router.post('/withdrawals/:id/approve', async (req, res) => {
-  const withdrawal = await get('SELECT * FROM withdrawals WHERE id = ?', [req.params.id]);
-  if (!withdrawal) return res.status(404).json({ code: 404, message: 'الطلب غير موجود' });
-  if (withdrawal.status !== 'pending') return res.status(400).json({ code: 400, message: 'تمت معالجة هذا الطلب مسبقاً' });
-
-  const user = await get('SELECT * FROM users WHERE id = ?', [withdrawal.user_id]);
-  const newBalance = user.balance - withdrawal.amount;
-  await run('UPDATE users SET balance = ? WHERE id = ?', [newBalance, user.id]);
-  await run('UPDATE withdrawals SET status = ?, processed_at = datetime(\'now\'), admin_id = ? WHERE id = ?',
-    ['approved', req.user.id, withdrawal.id]);
-  await run('INSERT INTO transactions (user_id, type, amount, balance_after, description) VALUES (?, ?, ?, ?, ?)',
-    [withdrawal.user_id, 'withdraw', -withdrawal.amount, newBalance, 'تم الموافقة على السحب وتحويل المبلغ']);
-
-  res.json({ code: 0, message: 'تم تحويل المبلغ عبر USDT والموافقة على السحب' });
+  try {
+    const result = await run(
+      "UPDATE withdrawals SET status = 'approved', processed_at = datetime('now'), admin_id = ? WHERE id = ? AND status = 'pending'",
+      [req.user.id, req.params.id]
+    );
+    if (result.changes === 0) {
+      return res.status(400).json({ code: 400, message: 'تمت معالجة هذا الطلب مسبقاً أو غير موجود' });
+    }
+    const withdrawal = await get('SELECT * FROM withdrawals WHERE id = ?', [req.params.id]);
+    res.json({ code: 0, message: 'تم تحويل المبلغ عبر USDT والموافقة على السحب' });
+  } catch (err) {
+    res.status(500).json({ code: 500, message: 'حدث خطأ في الموافقة على السحب' });
+  }
 });
 
 router.post('/withdrawals/:id/reject', async (req, res) => {
-  const withdrawal = await get('SELECT * FROM withdrawals WHERE id = ?', [req.params.id]);
-  if (!withdrawal) return res.status(404).json({ code: 404, message: 'الطلب غير موجود' });
-  if (withdrawal.status !== 'pending') return res.status(400).json({ code: 400, message: 'تمت معالجة هذا الطلب مسبقاً' });
+  try {
+    const withdrawal = await get('SELECT * FROM withdrawals WHERE id = ?', [req.params.id]);
+    if (!withdrawal) return res.status(404).json({ code: 404, message: 'الطلب غير موجود' });
+    if (withdrawal.status !== 'pending') return res.status(400).json({ code: 400, message: 'تمت معالجة هذا الطلب مسبقاً' });
 
-  const user = await get('SELECT * FROM users WHERE id = ?', [withdrawal.user_id]);
-  const newBalance = user.balance + withdrawal.amount;
-  await run('UPDATE users SET balance = ? WHERE id = ?', [newBalance, user.id]);
-  await run('UPDATE withdrawals SET status = ?, processed_at = datetime(\'now\'), admin_id = ? WHERE id = ?',
-    ['rejected', req.user.id, withdrawal.id]);
-  await run('INSERT INTO transactions (user_id, type, amount, balance_after, description) VALUES (?, ?, ?, ?, ?)',
-    [withdrawal.user_id, 'withdraw_refund', withdrawal.amount, newBalance, 'إرجاع مبلغ السحب المرفوض']);
+    const result = await run(
+      "UPDATE withdrawals SET status = 'rejected', processed_at = datetime('now'), admin_id = ? WHERE id = ? AND status = 'pending'",
+      [req.user.id, req.params.id]
+    );
+    if (result.changes === 0) {
+      return res.status(400).json({ code: 400, message: 'تمت معالجة هذا الطلب مسبقاً' });
+    }
 
-  res.json({ code: 0, message: 'تم رفض السحب وإرجاع المبلغ للرصيد' });
+    const balanceResult = await run(
+      'UPDATE users SET balance = balance + ? WHERE id = ?',
+      [withdrawal.amount, withdrawal.user_id]
+    );
+    const user = await get('SELECT balance FROM users WHERE id = ?', [withdrawal.user_id]);
+    await run('INSERT INTO transactions (user_id, type, amount, balance_after, description) VALUES (?, ?, ?, ?, ?)',
+      [withdrawal.user_id, 'withdraw_refund', withdrawal.amount, user.balance, 'إرجاع مبلغ السحب المرفوض']);
+
+    res.json({ code: 0, message: 'تم رفض السحب وإرجاع المبلغ للرصيد' });
+  } catch (err) {
+    res.status(500).json({ code: 500, message: 'حدث خطأ في رفض السحب' });
+  }
 });
 
 router.get('/hotels', async (req, res) => {
@@ -207,6 +239,10 @@ router.put('/levels/:id', async (req, res) => {
 });
 
 router.delete('/levels/:id', async (req, res) => {
+  const subscribers = await get('SELECT COUNT(*) as count FROM users WHERE level_id = ?', [req.params.id]);
+  if (subscribers.count > 0) {
+    return res.status(400).json({ code: 400, message: `لا يمكن حذف المستوى لوجود ${subscribers.count} مشتركين به` });
+  }
   await run('DELETE FROM levels WHERE id = ?', [req.params.id]);
   res.json({ code: 0, message: 'تم حذف المستوى' });
 });

@@ -6,6 +6,10 @@ function todayStr() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function nowStr() {
+  return new Date().toISOString().slice(0, 19).replace('T', ' ');
+}
+
 router.get('/', async (req, res) => {
   const rows = await all('SELECT * FROM levels ORDER BY price');
   res.json({ code: 0, data: rows });
@@ -30,8 +34,8 @@ router.post('/purchase', authUser, async (req, res) => {
     }
 
     const result = await run(
-      'UPDATE users SET balance = balance - ?, level_id = ?, level_date = ? WHERE id = ? AND balance >= ?',
-      [level.price, level.id, todayStr(), user.id, level.price]
+      'UPDATE users SET balance = balance - ?, level_id = ?, level_date = ?, level_purchased_at = ? WHERE id = ? AND balance >= ?',
+      [level.price, level.id, todayStr(), nowStr(), user.id, level.price]
     );
     if (result.changes === 0) {
       return res.status(400).json({ code: 400, message: 'الرصيد غير كافٍ لشراء هذا المستوى' });

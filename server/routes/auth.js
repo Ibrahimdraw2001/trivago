@@ -35,7 +35,7 @@ router.post('/register', async (req, res) => {
     const user = await get('SELECT id, username, role, balance, level_id FROM users WHERE id = ?', [result.lastID]);
     const token = sign(user);
     setAuthCookie(res, token);
-    res.json({ code: 0, data: { token, user } });
+    res.json({ code: 0, data: { user } });
   } catch (err) {
     res.status(500).json({ code: 500, message: 'حدث خطأ في التسجيل' });
   }
@@ -54,7 +54,7 @@ router.post('/login', async (req, res) => {
     const payload = { id: user.id, username: user.username, role: user.role, balance: user.balance, level_id: user.level_id };
     const token = sign(payload);
     setAuthCookie(res, token);
-    res.json({ code: 0, data: { token, user: payload } });
+    res.json({ code: 0, data: { user: payload } });
   } catch (err) {
     res.status(500).json({ code: 500, message: 'حدث خطأ في تسجيل الدخول' });
   }

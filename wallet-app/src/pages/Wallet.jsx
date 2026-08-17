@@ -91,7 +91,7 @@ export default function Wallet() {
                     <td>
                       <span className={`status-${item.status}`}>{STATUS_LABELS[item.status] || item.status}</span>
                     </td>
-                    <td style={{ color: '#9aa3b2', fontSize: 12 }}>{item.created_at.slice(0, 16)}</td>
+                    <td style={{ color: '#9aa3b2', fontSize: 12 }}>{(item.created_at || '').slice(0, 16)}</td>
                   </tr>
                 ))}
               </tbody>
