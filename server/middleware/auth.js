@@ -10,7 +10,8 @@ function sign(user) {
 async function authUser(req, res, next) {
   try {
     const header = req.headers.authorization || '';
-    const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+    const headerToken = header.startsWith('Bearer ') ? header.slice(7) : null;
+    const token = headerToken || req.cookies?.token;
     if (!token) {
       return res.status(401).json({ code: 401, message: 'غير مسجل الدخول' });
     }

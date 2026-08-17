@@ -1,15 +1,14 @@
 const API_BASE = '/api';
 
 export async function request(endpoint, options = {}) {
-  const token = localStorage.getItem('token') || '';
   const headers = {
     'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   };
   const config = {
     method: options.method || 'GET',
     headers,
+    credentials: 'include',
   };
   if (options.body) {
     config.body = JSON.stringify(options.body);

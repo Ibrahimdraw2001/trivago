@@ -18,11 +18,16 @@ router.post('/purchase', authUser, async (req, res) => {
     if (user.level_id === level.id) {
       return res.status(400).json({ code: 400, message: 'أنت مشترك بهذا المستوى بالفعل' });
     }
-    if (user.balance < level.price) {
+
+    const result = await run(
+      'UPDATE users SET balance = balance - ?, level_id = ? WHERE id = ? AND balance >= ?',
+      [level.price, level.id, user.id, level.price]
+    );
+    if (result.changes === 0) {
       return res.status(400).json({ code: 400, message: 'الرصيد غير كافٍ لشراء هذا المستوى' });
     }
+
     const newBalance = user.balance - level.price;
-    await run('UPDATE users SET balance = ?, level_id = ? WHERE id = ?', [newBalance, level.id, user.id]);
     await run('INSERT INTO transactions (user_id, type, amount, balance_after, description) VALUES (?, ?, ?, ?, ?)',
       [user.id, 'level', -level.price, newBalance, `شراء ${level.name}`]);
     res.json({ code: 0, data: { balance: newBalance, level_id: level.id }, message: `تم تفعيل ${level.name}` });

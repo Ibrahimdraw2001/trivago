@@ -74,6 +74,7 @@ router.post('/rate', authUser, async (req, res) => {
     }
 
     const today = todayStr();
+
     const dup = await get(
       'SELECT id FROM ratings WHERE user_id = ? AND hotel_id = ? AND date(created_at) = ?',
       [req.user.id, hotelId, today]
@@ -91,8 +92,15 @@ router.post('/rate', authUser, async (req, res) => {
     }
 
     const reward = user.reward_per_video;
+    const result = await run(
+      'UPDATE users SET balance = balance + ? WHERE id = ?',
+      [reward, user.id]
+    );
+    if (result.changes === 0) {
+      return res.status(500).json({ code: 500, message: 'حدث خطأ في تحديث الرصيد' });
+    }
+
     const newBalance = user.balance + reward;
-    await run('UPDATE users SET balance = ? WHERE id = ?', [newBalance, user.id]);
     await run('INSERT INTO ratings (user_id, hotel_id, stars, reward) VALUES (?, ?, ?, ?)', [req.user.id, hotelId, value, reward]);
     await run('INSERT INTO transactions (user_id, type, amount, balance_after, description) VALUES (?, ?, ?, ?, ?)',
       [req.user.id, 'reward', reward, newBalance, `مكافأة تقييم: ${hotel.name}`]);

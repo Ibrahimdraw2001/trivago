@@ -6,6 +6,7 @@ export const api = {
     login: (data) => request('/auth/login', { method: 'POST', body: data }),
     profile: () => request('/auth/profile'),
     changePassword: (data) => request('/auth/change-password', { method: 'POST', body: data }),
+    logout: () => request('/auth/logout', { method: 'POST' }),
   },
   deposits: {
     submit: (data) => request('/deposits', { method: 'POST', body: data }),

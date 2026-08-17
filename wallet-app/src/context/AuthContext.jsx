@@ -8,34 +8,27 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setLoading(false);
-      return;
-    }
     api.auth
       .profile()
       .then((data) => setUser(data))
-      .catch(() => localStorage.removeItem('token'))
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
   const login = async (data) => {
     const result = await api.auth.login(data);
-    localStorage.setItem('token', result.token);
     setUser(result.user);
     return result.user;
   };
 
   const register = async (data) => {
     const result = await api.auth.register(data);
-    localStorage.setItem('token', result.token);
     setUser(result.user);
     return result.user;
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
+  const logout = async () => {
+    await api.auth.logout().catch(() => {});
     setUser(null);
   };
 

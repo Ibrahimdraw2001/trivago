@@ -14,19 +14,24 @@ router.post('/', authUser, async (req, res) => {
     if (value < MIN_WITHDRAW) {
       return res.status(400).json({ code: 400, message: `الحد الأدنى للسحب هو ${MIN_WITHDRAW}$` });
     }
-    const user = await get('SELECT balance FROM users WHERE id = ?', [req.user.id]);
-    if (!user || user.balance < value) {
+
+    const result = await run(
+      'UPDATE users SET balance = balance - ? WHERE id = ? AND balance >= ?',
+      [value, req.user.id, value]
+    );
+    if (result.changes === 0) {
       return res.status(400).json({ code: 400, message: 'الرصيد غير كافٍ' });
     }
-    const newBalance = user.balance - value;
-    await run('UPDATE users SET balance = ? WHERE id = ?', [newBalance, req.user.id]);
-    const result = await run(
+
+    const user = await get('SELECT balance FROM users WHERE id = ?', [req.user.id]);
+    const newBalance = user.balance;
+    const insertResult = await run(
       'INSERT INTO withdrawals (user_id, amount, sham_cash_number, wallet_address) VALUES (?, ?, ?, ?)',
       [req.user.id, value, walletAddress, walletAddress]
     );
     await run('INSERT INTO transactions (user_id, type, amount, balance_after, description) VALUES (?, ?, ?, ?, ?)',
       [req.user.id, 'withdraw', -value, newBalance, 'طلب سحب بانتظار الموافقة']);
-    res.json({ code: 0, data: { id: result.lastID, status: 'pending' }, message: 'تم إرسال طلب السحب عبر USDT، بانتظار موافقة الأدمن' });
+    res.json({ code: 0, data: { id: insertResult.lastID, status: 'pending' }, message: 'تم إرسال طلب السحب عبر USDT، بانتظار موافقة الأدمن' });
   } catch (err) {
     res.status(500).json({ code: 500, message: 'حدث خطأ في السحب' });
   }

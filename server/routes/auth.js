@@ -5,6 +5,18 @@ const { sign, authUser } = require('../middleware/auth');
 
 const PASSWORD_RE = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
 
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax',
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+  path: '/',
+};
+
+function setAuthCookie(res, token) {
+  res.cookie('token', token, COOKIE_OPTIONS);
+}
+
 router.post('/register', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -22,6 +34,7 @@ router.post('/register', async (req, res) => {
     const result = await run('INSERT INTO users (username, password) VALUES (?, ?)', [username, hash]);
     const user = await get('SELECT id, username, role, balance, level_id FROM users WHERE id = ?', [result.lastID]);
     const token = sign(user);
+    setAuthCookie(res, token);
     res.json({ code: 0, data: { token, user } });
   } catch (err) {
     res.status(500).json({ code: 500, message: 'حدث خطأ في التسجيل' });
@@ -40,10 +53,16 @@ router.post('/login', async (req, res) => {
     }
     const payload = { id: user.id, username: user.username, role: user.role, balance: user.balance, level_id: user.level_id };
     const token = sign(payload);
+    setAuthCookie(res, token);
     res.json({ code: 0, data: { token, user: payload } });
   } catch (err) {
     res.status(500).json({ code: 500, message: 'حدث خطأ في تسجيل الدخول' });
   }
+});
+
+router.post('/logout', (req, res) => {
+  res.clearCookie('token', { path: '/' });
+  res.json({ code: 0, message: 'تم تسجيل الخروج' });
 });
 
 router.get('/profile', authUser, async (req, res) => {
