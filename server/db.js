@@ -151,11 +151,11 @@ async function init() {
   if (!admin) {
     const adminPass = process.env.ADMIN_PASSWORD;
     if (!adminPass) {
-      console.error('FATAL: ADMIN_PASSWORD is not set. Cannot create admin account.');
-      process.exit(1);
+      console.warn('WARNING: ADMIN_PASSWORD is not set. Admin account will not be created.');
+    } else {
+      const hash = bcrypt.hashSync(adminPass, 10);
+      await run('INSERT INTO users (username, password, role) VALUES (?, ?, ?)', ['admin', hash, 'admin']);
     }
-    const hash = bcrypt.hashSync(adminPass, 10);
-    await run('INSERT INTO users (username, password, role) VALUES (?, ?, ?)', ['admin', hash, 'admin']);
   }
 
   const levelCount = await get('SELECT COUNT(*) as count FROM levels');
