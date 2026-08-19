@@ -54,11 +54,16 @@ router.put('/users/:id', async (req, res) => {
         [user.id, 'admin_adjust', newBalance - user.balance, newBalance, 'تعديل رصيد من قبل الأدمن']);
     }
 
-    if (levelId !== undefined && levelId !== null && Number(levelId) !== user.level_id) {
-      const level = await get('SELECT id FROM levels WHERE id = ?', [levelId]);
-      if (level) {
-        await run('UPDATE users SET level_id = ?, level_date = ?, level_purchased_at = ? WHERE id = ?',
-          [Number(levelId), new Date().toISOString().slice(0, 10), new Date().toISOString().slice(0, 19).replace('T', ' '), user.id]);
+    if (levelId !== undefined && Number(levelId) !== (user.level_id || 0)) {
+      if (levelId === null || levelId === '' || levelId === 0) {
+        await run('UPDATE users SET level_id = NULL, level_date = NULL, level_purchased_at = NULL WHERE id = ?',
+          [user.id]);
+      } else {
+        const level = await get('SELECT id FROM levels WHERE id = ?', [levelId]);
+        if (level) {
+          await run('UPDATE users SET level_id = ?, level_date = ?, level_purchased_at = ? WHERE id = ?',
+            [Number(levelId), new Date().toISOString().slice(0, 10), new Date().toISOString().slice(0, 19).replace('T', ' '), user.id]);
+        }
       }
     }
 

@@ -29,7 +29,7 @@ router.get('/stats', authUser, async (req, res) => {
       total: total.count,
       completed: completed.count,
       pending: pending.count,
-      remaining: MAX_REFERRALS - total.count,
+      remaining: Math.max(0, MAX_REFERRALS - total.count),
     },
   });
 });

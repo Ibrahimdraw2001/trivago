@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { api } from '../api';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 
 const MIN_WITHDRAW = 10;
 
 export default function Withdraw() {
   const { notify } = useToast();
+  const { refresh } = useAuth();
   const [form, setForm] = useState({ amount: '', walletAddress: '' });
   const [message, setMessage] = useState(null);
   const [error, setError] = useState('');
@@ -23,6 +25,7 @@ export default function Withdraw() {
       setMessage('تم إرسال طلب السحب. سيحول الأدمن المبلغ عبر USDT ثم يعتمد الطلب.');
       notify('تم إرسال طلب السحب');
       setForm({ amount: '', walletAddress: '' });
+      refresh().catch(() => {});
     } catch (err) {
       setError(err.message);
       notify(err.message, 'error');

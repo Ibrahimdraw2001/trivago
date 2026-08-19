@@ -4,6 +4,7 @@ const { run, get, generateRefCode } = require('../db');
 const { sign, authUser } = require('../middleware/auth');
 
 const PASSWORD_RE = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
+const MAX_REFERRALS = 15;
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -36,6 +37,10 @@ router.post('/register', async (req, res) => {
       const inviter = await get('SELECT id FROM users WHERE referral_code = ?', [String(referralCode).trim().toUpperCase()]);
       if (!inviter) {
         return res.status(400).json({ code: 400, message: 'كود الدعوة غير صحيح' });
+      }
+      const refCount = await get('SELECT COUNT(*) as count FROM referrals WHERE inviter_id = ?', [inviter.id]);
+      if (refCount.count >= MAX_REFERRALS) {
+        return res.status(400).json({ code: 400, message: 'كود الدعوة وصل للحد الأقصى' });
       }
       inviterId = inviter.id;
     }

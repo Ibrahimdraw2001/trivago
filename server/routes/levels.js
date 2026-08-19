@@ -76,7 +76,8 @@ router.post('/purchase', authUser, async (req, res) => {
       }
     }
 
-    res.json({ code: 0, data: { balance: newBalance, level_id: level.id }, message: `تم تفعيل ${level.name}` });
+    const finalUser = await get('SELECT balance FROM users WHERE id = ?', [user.id]);
+    res.json({ code: 0, data: { balance: finalUser.balance, level_id: level.id }, message: `تم تفعيل ${level.name}` });
   } catch (err) {
     res.status(500).json({ code: 500, message: 'حدث خطأ في شراء المستوى' });
   }

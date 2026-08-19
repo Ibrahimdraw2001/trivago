@@ -19,20 +19,23 @@ router.get('/', authUser, async (req, res) => {
 
   const today = todayStr();
   const levelPurchasedToday = user.level_date === today;
-  let ratedRows;
+
+  const allRatedToday = await all(
+    `SELECT hotel_id FROM ratings WHERE user_id = ? AND date(created_at) = ?`,
+    [req.user.id, today]
+  );
+  const ratedIds = allRatedToday.map((r) => r.hotel_id);
+
+  let ratedCount;
   if (levelPurchasedToday && user.level_purchased_at) {
-    ratedRows = await all(
-      `SELECT hotel_id FROM ratings WHERE user_id = ? AND date(created_at) = ? AND created_at >= ?`,
+    const row = await get(
+      `SELECT COUNT(*) as count FROM ratings WHERE user_id = ? AND date(created_at) = ? AND created_at >= ?`,
       [req.user.id, today, user.level_purchased_at]
     );
+    ratedCount = row ? row.count : 0;
   } else {
-    ratedRows = await all(
-      `SELECT hotel_id FROM ratings WHERE user_id = ? AND date(created_at) = ?`,
-      [req.user.id, today]
-    );
+    ratedCount = ratedIds.length;
   }
-  const ratedIds = ratedRows.map((r) => r.hotel_id);
-  const ratedCount = ratedIds.length;
 
   let hotels = [];
   if (ratedCount < user.daily_videos) {
