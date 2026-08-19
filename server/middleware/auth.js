@@ -4,7 +4,7 @@ const { get } = require('../db');
 const JWT_SECRET = process.env.JWT_SECRET;
 
 function sign(user) {
-  return jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+  return jwt.sign({ id: user.id, role: user.role, tv: user.token_version || 0 }, JWT_SECRET, { expiresIn: '7d' });
 }
 
 async function authUser(req, res, next) {
@@ -16,9 +16,12 @@ async function authUser(req, res, next) {
       return res.status(401).json({ code: 401, message: 'غير مسجل الدخول' });
     }
     const decoded = jwt.verify(token, JWT_SECRET);
-    const user = await get('SELECT id, username, role, balance, level_id FROM users WHERE id = ?', [decoded.id]);
+    const user = await get('SELECT id, username, role, balance, level_id, token_version FROM users WHERE id = ?', [decoded.id]);
     if (!user) {
       return res.status(401).json({ code: 401, message: 'المستخدم غير موجود' });
+    }
+    if (decoded.tv !== undefined && decoded.tv !== user.token_version) {
+      return res.status(401).json({ code: 401, message: 'انتهت الجلسة، سجل الدخول مجدداً' });
     }
     req.user = user;
     next();
@@ -34,4 +37,4 @@ async function authAdmin(req, res, next) {
   next();
 }
 
-module.exports = { JWT_SECRET, sign, authUser, authAdmin };
+module.exports = { sign, authUser, authAdmin };

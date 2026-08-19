@@ -6,6 +6,8 @@ export default function AdminDeposits() {
   const { notify } = useToast();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [processingId, setProcessingId] = useState(null);
+  const [confirmAction, setConfirmAction] = useState(null);
 
   const load = () => {
     api.admin.deposits().then(setItems).catch(() => {}).finally(() => setLoading(false));
@@ -16,6 +18,7 @@ export default function AdminDeposits() {
   }, []);
 
   const act = async (id, action) => {
+    setProcessingId(id);
     try {
       if (action === 'approve') {
         await api.admin.approveDeposit(id);
@@ -27,6 +30,9 @@ export default function AdminDeposits() {
       load();
     } catch (err) {
       notify(err.message, 'error');
+    } finally {
+      setProcessingId(null);
+      setConfirmAction(null);
     }
   };
 
@@ -35,6 +41,30 @@ export default function AdminDeposits() {
   return (
     <div className="card">
       <h2>طلبات الإيداع</h2>
+
+      {confirmAction && (
+        <div className="modal-backdrop" onClick={() => setConfirmAction(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3>{confirmAction.action === 'approve' ? 'الموافقة على الإيداع' : 'رفض الإيداع'}</h3>
+            <p style={{ color: '#9aa3b2', marginBottom: 16 }}>
+              {confirmAction.action === 'approve'
+                ? `هل تريد الموافقة على إيداع ${confirmAction.amount}$ للمستخدم ${confirmAction.username}؟`
+                : `هل تريد رفض طلب إيداع ${confirmAction.amount}$ من ${confirmAction.username}؟`}
+            </p>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                className={confirmAction.action === 'approve' ? 'btn-green' : 'btn-red'}
+                onClick={() => act(confirmAction.id, confirmAction.action)}
+                disabled={processingId === confirmAction.id}
+              >
+                {processingId === confirmAction.id ? 'جارٍ...' : 'تأكيد'}
+              </button>
+              <button className="btn-gray" onClick={() => setConfirmAction(null)}>إلغاء</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="table-wrap">
         <table>
           <thead>
@@ -65,8 +95,20 @@ export default function AdminDeposits() {
                 <td>
                   {item.status === 'pending' && (
                     <div style={{ display: 'flex', gap: 8 }}>
-                      <button className="btn-green btn-sm" onClick={() => act(item.id, 'approve')}>قبول</button>
-                      <button className="btn-red btn-sm" onClick={() => act(item.id, 'reject')}>رفض</button>
+                      <button
+                        className="btn-green btn-sm"
+                        disabled={processingId === item.id}
+                        onClick={() => setConfirmAction({ id: item.id, action: 'approve', amount: item.amount, username: item.username })}
+                      >
+                        {processingId === item.id ? '...' : 'قبول'}
+                      </button>
+                      <button
+                        className="btn-red btn-sm"
+                        disabled={processingId === item.id}
+                        onClick={() => setConfirmAction({ id: item.id, action: 'reject', amount: item.amount, username: item.username })}
+                      >
+                        {processingId === item.id ? '...' : 'رفض'}
+                      </button>
                     </div>
                   )}
                 </td>

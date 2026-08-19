@@ -1,4 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useAuth } from './context/AuthContext';
+import { setOnUnauthorized } from './api/client';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Terms from './pages/Terms';
@@ -22,6 +25,15 @@ import AdminLevels from './pages/admin/AdminLevels';
 import AdminUsers from './pages/admin/AdminUsers';
 
 export default function App() {
+  const { logout } = useAuth();
+
+  useEffect(() => {
+    setOnUnauthorized(() => {
+      logout();
+    });
+    return () => setOnUnauthorized(null);
+  }, [logout]);
+
   return (
     <Routes>
       <Route path="/login" element={<Login />} />

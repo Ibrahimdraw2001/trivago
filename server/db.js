@@ -15,6 +15,7 @@ const USE_REMOTE = !!process.env.TURSO_DATABASE_URL;
 let run;
 let get;
 let all;
+let tx;
 let db;
 
 if (USE_REMOTE) {
@@ -37,6 +38,34 @@ if (USE_REMOTE) {
   all = async (sql, params = []) => {
     const rs = await db.execute({ sql, args: params });
     return rs.rows;
+  };
+
+  tx = async (fn) => {
+    await db.execute('BEGIN');
+    try {
+      const savedRun = run, savedGet = get, savedAll = all;
+      const tRun = async (sql, params = []) => {
+        const rs = await db.execute({ sql, args: params });
+        return { lastID: Number(rs.lastInsertRowid), changes: rs.rowsAffected };
+      };
+      const tGet = async (sql, params = []) => {
+        const rs = await db.execute({ sql, args: params });
+        return rs.rows[0];
+      };
+      const tAll = async (sql, params = []) => {
+        const rs = await db.execute({ sql, args: params });
+        return rs.rows;
+      };
+      run = tRun; get = tGet; all = tAll;
+      const result = await fn();
+      await db.execute('COMMIT');
+      return result;
+    } catch (err) {
+      await db.execute('ROLLBACK');
+      throw err;
+    } finally {
+      run = savedRun; get = savedGet; all = savedAll;
+    }
   };
 } else {
   const sqlite3 = require('sqlite3').verbose();
@@ -63,6 +92,49 @@ if (USE_REMOTE) {
       db.all(sql, params, (err, rows) => {
         if (err) return reject(err);
         resolve(rows);
+      });
+    });
+
+  tx = (fn) =>
+    new Promise((resolve, reject) => {
+      db.serialize(async () => {
+        const savedRun = run, savedGet = get, savedAll = all;
+        const tRun = (sql, params = []) =>
+          new Promise((res, rej) => {
+            db.run(sql, params, function (err) {
+              if (err) return rej(err);
+              res({ lastID: this.lastID, changes: this.changes });
+            });
+          });
+        const tGet = (sql, params = []) =>
+          new Promise((res, rej) => {
+            db.get(sql, params, (err, row) => {
+              if (err) return rej(err);
+              res(row);
+            });
+          });
+        const tAll = (sql, params = []) =>
+          new Promise((res, rej) => {
+            db.all(sql, params, (err, rows) => {
+              if (err) return rej(err);
+              res(rows);
+            });
+          });
+        run = tRun; get = tGet; all = tAll;
+        db.run('BEGIN');
+        try {
+          const result = await fn();
+          db.run('COMMIT', (err) => {
+            run = savedRun; get = savedGet; all = savedAll;
+            if (err) return reject(err);
+            resolve(result);
+          });
+        } catch (err) {
+          db.run('ROLLBACK', () => {
+            run = savedRun; get = savedGet; all = savedAll;
+            reject(err);
+          });
+        }
       });
     });
 }
@@ -195,6 +267,11 @@ async function init() {
   if (!userCols.some((c) => c.name === 'referred_by')) {
     await run("ALTER TABLE users ADD COLUMN referred_by INTEGER");
   }
+  if (!userCols.some((c) => c.name === 'token_version')) {
+    await run("ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0");
+  }
+
+  await run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_ratings_user_hotel_date ON ratings(user_id, hotel_id, date(created_at))`);
 
   await run(`CREATE TABLE IF NOT EXISTS referrals (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -206,6 +283,15 @@ async function init() {
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     completed_at TEXT
   )`);
+
+  await run(`CREATE TABLE IF NOT EXISTS login_attempts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL,
+    ip TEXT,
+    success INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )`);
+  await run('CREATE INDEX IF NOT EXISTS idx_login_attempts_username ON login_attempts(username, created_at)');
 
   const usersNeedingCode = await all('SELECT id FROM users WHERE referral_code IS NULL');
   for (const u of usersNeedingCode) {
@@ -247,4 +333,4 @@ async function init() {
   }
 }
 
-module.exports = { db, run, get, all, init, generateRefCode };
+module.exports = { db, run, get, all, tx, init, generateRefCode };

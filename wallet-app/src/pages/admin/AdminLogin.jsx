@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { api } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import TrivagoLogo from '../../components/TrivagoLogo';
 
 export default function AdminLogin() {
-  const { login } = useAuth();
+  const { setUser } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
@@ -15,11 +16,8 @@ export default function AdminLogin() {
     setError('');
     setLoading(true);
     try {
-      const user = await login(form);
-      if (user.role !== 'admin') {
-        setError('هذا الحساب ليس بحساب أدمن');
-        return;
-      }
+      const result = await api.request('/auth/admin-login', { method: 'POST', body: form });
+      setUser(result.user);
       navigate('/admin');
     } catch (err) {
       setError(err.message);
@@ -40,7 +38,7 @@ export default function AdminLogin() {
         <form onSubmit={submit}>
           <div className="form-group">
             <label>اسم المستخدم</label>
-            <input value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} required />
+            <input value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} required maxLength={30} />
           </div>
           <div className="form-group">
             <label>كلمة المرور</label>

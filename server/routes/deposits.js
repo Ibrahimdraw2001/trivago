@@ -2,12 +2,18 @@ const router = require('express').Router();
 const { run, get, all } = require('../db');
 const { authUser } = require('../middleware/auth');
 
+const TXID_RE = /^[A-Za-z0-9]{8,128}$/;
+
 router.post('/', authUser, async (req, res) => {
   try {
-    const { amount, txnId } = req.body;
+    let { amount, txnId } = req.body;
+    txnId = String(txnId || '').trim().slice(0, 128);
     const value = Number(amount);
     if (!txnId || !value || value <= 0) {
       return res.status(400).json({ code: 400, message: 'المبلغ ورقم العملية (TxID) مطلوبان' });
+    }
+    if (!TXID_RE.test(txnId)) {
+      return res.status(400).json({ code: 400, message: 'رقم العملية يجب أن يكون 8-128 حرف وأرقام' });
     }
     const exists = await get('SELECT id FROM deposits WHERE txn_id = ?', [txnId]);
     if (exists) {

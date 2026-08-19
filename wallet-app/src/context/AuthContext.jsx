@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { api } from '../api';
 
 const AuthContext = createContext(null);
@@ -27,19 +27,19 @@ export function AuthProvider({ children }) {
     return result.user;
   };
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     await api.auth.logout().catch(() => {});
     setUser(null);
-  };
+  }, []);
 
-  const refresh = async () => {
+  const refresh = useCallback(async () => {
     const data = await api.auth.profile();
     setUser(data);
     return data;
-  };
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, refresh }}>
+    <AuthContext.Provider value={{ user, setUser, loading, login, register, logout, refresh }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { run, get, all } = require('../db');
+const { run, get, all, tx } = require('../db');
 const { authUser } = require('../middleware/auth');
 
 function todayStr() {
@@ -67,68 +67,78 @@ router.post('/rate', authUser, async (req, res) => {
   try {
     const { hotelId, stars } = req.body;
     const value = Math.round(Number(stars));
-    if (!hotelId || isNaN(value) || value < 0 || value > 10) {
-      return res.status(400).json({ code: 400, message: 'التقييم يجب أن يكون من 0 إلى 10 نجوم' });
+    if (!hotelId || isNaN(value) || value < 1 || value > 10) {
+      return res.status(400).json({ code: 400, message: 'التقييم يجب أن يكون من 1 إلى 10 نجوم' });
     }
 
-    const user = await get(
-      `SELECT u.*, l.name as level_name, l.daily_videos, l.reward_per_video
-       FROM users u LEFT JOIN levels l ON u.level_id = l.id WHERE u.id = ?`,
-      [req.user.id]
-    );
-    if (!user.level_id) {
-      return res.status(400).json({ code: 400, message: 'يجب شراء مستوى أولاً' });
-    }
-
-    const hotel = await get('SELECT * FROM hotels WHERE id = ? AND active = 1', [hotelId]);
-    if (!hotel) {
-      return res.status(404).json({ code: 404, message: 'الفندق غير موجود' });
-    }
-
-    const today = todayStr();
-    const levelPurchasedToday = user.level_date === today;
-
-    const dup = await get(
-      'SELECT id FROM ratings WHERE user_id = ? AND hotel_id = ? AND date(created_at) = ?',
-      [req.user.id, hotelId, today]
-    );
-    if (dup) {
-      return res.status(400).json({ code: 400, message: 'لقد قيّمت هذا الفندق اليوم بالفعل' });
-    }
-
-    let countToday;
-    if (levelPurchasedToday && user.level_purchased_at) {
-      countToday = await get(
-        'SELECT COUNT(*) as count FROM ratings WHERE user_id = ? AND date(created_at) = ? AND created_at >= ?',
-        [req.user.id, today, user.level_purchased_at]
+    const result = await tx(async () => {
+      const user = await get(
+        `SELECT u.*, l.name as level_name, l.daily_videos, l.reward_per_video
+         FROM users u LEFT JOIN levels l ON u.level_id = l.id WHERE u.id = ?`,
+        [req.user.id]
       );
-    } else {
-      countToday = await get(
-        'SELECT COUNT(*) as count FROM ratings WHERE user_id = ? AND date(created_at) = ?',
-        [req.user.id, today]
+      if (!user.level_id) {
+        throw Object.assign(new Error('يجب شراء مستوى أولاً'), { status: 400 });
+      }
+
+      const hotel = await get('SELECT * FROM hotels WHERE id = ? AND active = 1', [hotelId]);
+      if (!hotel) {
+        throw Object.assign(new Error('الفندق غير موجود'), { status: 404 });
+      }
+
+      const today = todayStr();
+      const levelPurchasedToday = user.level_date === today;
+
+      try {
+        await run(
+          'INSERT INTO ratings (user_id, hotel_id, stars, reward) VALUES (?, ?, ?, 0)',
+          [req.user.id, hotelId, value]
+        );
+      } catch (e) {
+        if (e.message && e.message.includes('UNIQUE')) {
+          throw Object.assign(new Error('لقد قيّمت هذا الفندق اليوم بالفعل'), { status: 400 });
+        }
+        throw e;
+      }
+
+      let countToday;
+      if (levelPurchasedToday && user.level_purchased_at) {
+        countToday = await get(
+          'SELECT COUNT(*) as count FROM ratings WHERE user_id = ? AND date(created_at) = ? AND created_at >= ?',
+          [req.user.id, today, user.level_purchased_at]
+        );
+      } else {
+        countToday = await get(
+          'SELECT COUNT(*) as count FROM ratings WHERE user_id = ? AND date(created_at) = ?',
+          [req.user.id, today]
+        );
+      }
+      if (countToday.count > user.daily_videos) {
+        throw Object.assign(new Error('وصلت إلى الحد الأقصى لتقييمات اليوم'), { status: 400 });
+      }
+
+      const reward = user.reward_per_video;
+      const updateResult = await run(
+        'UPDATE users SET balance = balance + ? WHERE id = ?',
+        [reward, user.id]
       );
-    }
-    if (countToday.count >= user.daily_videos) {
-      return res.status(400).json({ code: 400, message: 'وصلت إلى الحد الأقصى لتقييمات اليوم' });
-    }
+      if (updateResult.changes === 0) {
+        throw Object.assign(new Error('حدث خطأ في تحديث الرصيد'), { status: 500 });
+      }
 
-    const reward = user.reward_per_video;
-    const result = await run(
-      'UPDATE users SET balance = balance + ? WHERE id = ?',
-      [reward, user.id]
-    );
-    if (result.changes === 0) {
-      return res.status(500).json({ code: 500, message: 'حدث خطأ في تحديث الرصيد' });
-    }
+      const updatedUser = await get('SELECT balance FROM users WHERE id = ?', [user.id]);
+      await run('UPDATE ratings SET reward = ? WHERE user_id = ? AND hotel_id = ? AND date(created_at) = ?',
+        [reward, req.user.id, hotelId, today]);
+      await run('INSERT INTO transactions (user_id, type, amount, balance_after, description) VALUES (?, ?, ?, ?, ?)',
+        [req.user.id, 'reward', reward, updatedUser.balance, `مكافأة تقييم: ${hotel.name}`]);
 
-    const newBalance = user.balance + reward;
-    await run('INSERT INTO ratings (user_id, hotel_id, stars, reward) VALUES (?, ?, ?, ?)', [req.user.id, hotelId, value, reward]);
-    await run('INSERT INTO transactions (user_id, type, amount, balance_after, description) VALUES (?, ?, ?, ?, ?)',
-      [req.user.id, 'reward', reward, newBalance, `مكافأة تقييم: ${hotel.name}`]);
+      return { reward, balance: updatedUser.balance };
+    });
 
-    res.json({ code: 0, data: { reward, balance: newBalance }, message: 'تم حفظ تقييمك وحصولك على المكافأة' });
+    res.json({ code: 0, data: result, message: 'تم حفظ تقييمك وحصولك على المكافأة' });
   } catch (err) {
-    res.status(500).json({ code: 500, message: 'حدث خطأ في إرسال التقييم' });
+    const status = err.status || 500;
+    res.status(status).json({ code: status, message: err.message || 'حدث خطأ في إرسال التقييم' });
   }
 });
 

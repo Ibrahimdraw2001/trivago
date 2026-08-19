@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useCallback } from 'react';
 
 const ToastContext = createContext(null);
 
+const MAX_TOASTS = 5;
 let toastId = 0;
 
 export function ToastProvider({ children }) {
@@ -14,7 +15,10 @@ export function ToastProvider({ children }) {
   const notify = useCallback(
     (message, type = 'success') => {
       const id = ++toastId;
-      setToasts((prev) => [...prev, { id, message, type }]);
+      setToasts((prev) => {
+        const next = [...prev, { id, message, type }];
+        return next.length > MAX_TOASTS ? next.slice(-MAX_TOASTS) : next;
+      });
       setTimeout(() => remove(id), 3500);
     },
     [remove]

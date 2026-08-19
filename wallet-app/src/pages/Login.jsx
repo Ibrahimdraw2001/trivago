@@ -17,7 +17,7 @@ export default function Login() {
     setLoading(true);
     try {
       const user = await login(form);
-      navigate(user.role === 'admin' ? '/admin' : '/');
+      navigate('/');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -37,7 +37,7 @@ export default function Login() {
         <form onSubmit={submit}>
           <div className="form-group">
             <label>اسم المستخدم</label>
-            <input value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} required />
+            <input value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} required maxLength={30} />
           </div>
           <div className="form-group">
             <label>كلمة المرور</label>

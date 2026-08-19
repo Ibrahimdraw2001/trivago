@@ -117,12 +117,12 @@ export default function AdminUsers() {
             </tr>
           </thead>
           <tbody>
-            {items.filter((item) => !search || item.username.includes(search)).length === 0 && (
+            {items.filter((item) => !search || item.username.toLowerCase().includes(search.toLowerCase())).length === 0 && (
               <tr>
                 <td colSpan="5" style={{ textAlign: 'center', color: '#6b7280' }}>{search ? 'لا توجد نتائج للبحث' : 'لا يوجد مستخدمون'}</td>
               </tr>
             )}
-            {items.filter((item) => !search || item.username.includes(search)).map((item) => (
+            {items.filter((item) => !search || item.username.toLowerCase().includes(search.toLowerCase())).map((item) => (
               <tr key={item.id}>
                 <td>{item.username}</td>
                 <td>{item.level_name || 'لا يوجد'}</td>

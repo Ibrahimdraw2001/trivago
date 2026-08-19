@@ -1,16 +1,20 @@
-FROM node:20 AS build
+FROM node:20-slim AS build
 WORKDIR /app
 COPY wallet-app/package*.json ./wallet-app/
 RUN cd wallet-app && npm ci
 COPY wallet-app/ ./wallet-app/
 RUN cd wallet-app && npm run build
 
-FROM node:20
+FROM node:20-slim
+RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
+RUN groupadd -r app && useradd -r -g app app
 WORKDIR /app
 COPY server/package*.json ./server/
 RUN cd server && npm ci && npm rebuild sqlite3 --build-from-source
 COPY server/ ./server/
 COPY --from=build /app/wallet-app/dist ./server/dist
+RUN chown -R app:app /app
+USER app
 WORKDIR /app/server
 RUN node seed.js
 ENV NODE_ENV=production

@@ -4,6 +4,7 @@ import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 
 const MIN_WITHDRAW = 10;
+const BEP20_RE = /^0x[0-9a-fA-F]{40}$/;
 
 export default function Withdraw() {
   const { notify } = useToast();
@@ -18,9 +19,12 @@ export default function Withdraw() {
     setError('');
     setLoading(true);
     try {
+      if (!BEP20_RE.test(form.walletAddress.trim())) {
+        throw new Error('عنوان المحفظة غير صحيح. يجب أن يبدأ بـ 0x ويحتوي على 42 حرفاً');
+      }
       await api.withdrawals.submit({
         amount: Number(form.amount),
-        walletAddress: form.walletAddress,
+        walletAddress: form.walletAddress.trim(),
       });
       setMessage('تم إرسال طلب السحب. سيحول الأدمن المبلغ عبر USDT ثم يعتمد الطلب.');
       notify('تم إرسال طلب السحب');
@@ -43,7 +47,15 @@ export default function Withdraw() {
         <form onSubmit={submit}>
           <div className="form-group">
             <label>عنوان محفظة USDT (شبكة BEP-20)</label>
-            <input value={form.walletAddress} onChange={(e) => setForm({ ...form, walletAddress: e.target.value })} placeholder="مثال: 0x1a2b3c4d..." required />
+            <input
+              value={form.walletAddress}
+              onChange={(e) => setForm({ ...form, walletAddress: e.target.value })}
+              placeholder="مثال: 0x1a2b3c4d..."
+              required
+              maxLength={42}
+              pattern="0x[0-9a-fA-F]{40}"
+              title="عنوان محفظة BEP-20 صالح (0x متبوعة بـ 40 حرف hex)"
+            />
           </div>
           <div className="form-group">
             <label>المبلغ المراد سحبه ($)</label>
