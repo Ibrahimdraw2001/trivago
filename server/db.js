@@ -41,30 +41,14 @@ if (USE_REMOTE) {
   };
 
   tx = async (fn) => {
-    await db.execute('BEGIN');
+    await db.execute({ sql: 'BEGIN' });
     try {
-      const savedRun = run, savedGet = get, savedAll = all;
-      const tRun = async (sql, params = []) => {
-        const rs = await db.execute({ sql, args: params });
-        return { lastID: Number(rs.lastInsertRowid), changes: rs.rowsAffected };
-      };
-      const tGet = async (sql, params = []) => {
-        const rs = await db.execute({ sql, args: params });
-        return rs.rows[0];
-      };
-      const tAll = async (sql, params = []) => {
-        const rs = await db.execute({ sql, args: params });
-        return rs.rows;
-      };
-      run = tRun; get = tGet; all = tAll;
       const result = await fn();
-      await db.execute('COMMIT');
+      await db.execute({ sql: 'COMMIT' });
       return result;
     } catch (err) {
-      await db.execute('ROLLBACK');
+      try { await db.execute({ sql: 'ROLLBACK' }); } catch (_) {}
       throw err;
-    } finally {
-      run = savedRun; get = savedGet; all = savedAll;
     }
   };
 } else {
@@ -97,44 +81,19 @@ if (USE_REMOTE) {
 
   tx = (fn) =>
     new Promise((resolve, reject) => {
-      db.serialize(async () => {
-        const savedRun = run, savedGet = get, savedAll = all;
-        const tRun = (sql, params = []) =>
-          new Promise((res, rej) => {
-            db.run(sql, params, function (err) {
-              if (err) return rej(err);
-              res({ lastID: this.lastID, changes: this.changes });
+      db.serialize(() => {
+        db.run('BEGIN', async (beginErr) => {
+          if (beginErr) return reject(beginErr);
+          try {
+            const result = await fn();
+            db.run('COMMIT', (commitErr) => {
+              if (commitErr) return reject(commitErr);
+              resolve(result);
             });
-          });
-        const tGet = (sql, params = []) =>
-          new Promise((res, rej) => {
-            db.get(sql, params, (err, row) => {
-              if (err) return rej(err);
-              res(row);
-            });
-          });
-        const tAll = (sql, params = []) =>
-          new Promise((res, rej) => {
-            db.all(sql, params, (err, rows) => {
-              if (err) return rej(err);
-              res(rows);
-            });
-          });
-        run = tRun; get = tGet; all = tAll;
-        db.run('BEGIN');
-        try {
-          const result = await fn();
-          db.run('COMMIT', (err) => {
-            run = savedRun; get = savedGet; all = savedAll;
-            if (err) return reject(err);
-            resolve(result);
-          });
-        } catch (err) {
-          db.run('ROLLBACK', () => {
-            run = savedRun; get = savedGet; all = savedAll;
-            reject(err);
-          });
-        }
+          } catch (err) {
+            db.run('ROLLBACK', () => reject(err));
+          }
+        });
       });
     });
 }
@@ -268,10 +227,28 @@ async function init() {
     await run("ALTER TABLE users ADD COLUMN referred_by INTEGER");
   }
   if (!userCols.some((c) => c.name === 'token_version')) {
-    await run("ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0");
+    try {
+      await run("ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0");
+    } catch (e) {
+      console.warn('token_version column may already exist:', e.message);
+    }
   }
 
-  await run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_ratings_user_hotel_date ON ratings(user_id, hotel_id, date(created_at))`);
+  const dupRatings = await all(
+    'SELECT user_id, hotel_id, date(created_at) as d, COUNT(*) as cnt FROM ratings GROUP BY user_id, hotel_id, date(created_at) HAVING cnt > 1'
+  );
+  for (const dup of dupRatings) {
+    await run(
+      'DELETE FROM ratings WHERE id NOT IN (SELECT MIN(id) FROM ratings WHERE user_id = ? AND hotel_id = ? AND date(created_at) = ? GROUP BY user_id, hotel_id, date(created_at))',
+      [dup.user_id, dup.hotel_id, dup.d]
+    );
+  }
+
+  try {
+    await run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_ratings_user_hotel_date ON ratings(user_id, hotel_id, date(created_at))`);
+  } catch (e) {
+    console.warn('Could not create unique ratings index:', e.message);
+  }
 
   await run(`CREATE TABLE IF NOT EXISTS referrals (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -291,7 +268,6 @@ async function init() {
     success INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   )`);
-  await run('CREATE INDEX IF NOT EXISTS idx_login_attempts_username ON login_attempts(username, created_at)');
 
   const usersNeedingCode = await all('SELECT id FROM users WHERE referral_code IS NULL');
   for (const u of usersNeedingCode) {

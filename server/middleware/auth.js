@@ -16,11 +16,16 @@ async function authUser(req, res, next) {
       return res.status(401).json({ code: 401, message: 'غير مسجل الدخول' });
     }
     const decoded = jwt.verify(token, JWT_SECRET);
-    const user = await get('SELECT id, username, role, balance, level_id, token_version FROM users WHERE id = ?', [decoded.id]);
+    let user;
+    try {
+      user = await get('SELECT id, username, role, balance, level_id, token_version FROM users WHERE id = ?', [decoded.id]);
+    } catch (_) {
+      user = await get('SELECT id, username, role, balance, level_id FROM users WHERE id = ?', [decoded.id]);
+    }
     if (!user) {
       return res.status(401).json({ code: 401, message: 'المستخدم غير موجود' });
     }
-    if (decoded.tv !== undefined && decoded.tv !== user.token_version) {
+    if (user.token_version !== undefined && decoded.tv !== undefined && decoded.tv !== user.token_version) {
       return res.status(401).json({ code: 401, message: 'انتهت الجلسة، سجل الدخول مجدداً' });
     }
     req.user = user;

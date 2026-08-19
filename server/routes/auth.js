@@ -94,10 +94,13 @@ router.post('/login', async (req, res) => {
     password = String(password);
     const ip = req.ip || req.connection?.remoteAddress || '';
 
-    const locked = await get(
-      "SELECT COUNT(*) as count FROM login_attempts WHERE username = ? AND success = 0 AND created_at > datetime('now', '-' || ? || ' minutes')",
-      [username, LOCKOUT_MINUTES]
-    );
+    let locked = { count: 0 };
+    try {
+      locked = await get(
+        "SELECT COUNT(*) as count FROM login_attempts WHERE username = ? AND success = 0 AND created_at > datetime('now', ?)",
+        [username, `-${LOCKOUT_MINUTES} minutes`]
+      );
+    } catch (_) {}
     if (locked && locked.count >= MAX_LOGIN_ATTEMPTS) {
       return res.status(429).json({ code: 429, message: `تم قفل الحساب لمدة ${LOCKOUT_MINUTES} دقيقة بسبب محاولات كثيرة` });
     }
@@ -105,7 +108,9 @@ router.post('/login', async (req, res) => {
     const user = await get('SELECT * FROM users WHERE username = ?', [username]);
     const success = user && bcrypt.compareSync(password, user.password);
 
-    await run('INSERT INTO login_attempts (username, ip, success) VALUES (?, ?, ?)', [username, ip, success ? 1 : 0]);
+    try {
+      await run('INSERT INTO login_attempts (username, ip, success) VALUES (?, ?, ?)', [username, ip, success ? 1 : 0]);
+    } catch (_) {}
 
     if (!user || !success) {
       return res.status(401).json({ code: 401, message: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
@@ -130,10 +135,13 @@ router.post('/admin-login', async (req, res) => {
     password = String(password);
     const ip = req.ip || req.connection?.remoteAddress || '';
 
-    const locked = await get(
-      "SELECT COUNT(*) as count FROM login_attempts WHERE username = ? AND success = 0 AND created_at > datetime('now', '-' || ? || ' minutes')",
-      [username, LOCKOUT_MINUTES]
-    );
+    let locked = { count: 0 };
+    try {
+      locked = await get(
+        "SELECT COUNT(*) as count FROM login_attempts WHERE username = ? AND success = 0 AND created_at > datetime('now', ?)",
+        [username, `-${LOCKOUT_MINUTES} minutes`]
+      );
+    } catch (_) {}
     if (locked && locked.count >= MAX_LOGIN_ATTEMPTS) {
       return res.status(429).json({ code: 429, message: `تم قفل الحساب لمدة ${LOCKOUT_MINUTES} دقيقة بسبب محاولات كثيرة` });
     }
@@ -141,7 +149,9 @@ router.post('/admin-login', async (req, res) => {
     const user = await get('SELECT * FROM users WHERE username = ?', [username]);
     const success = user && user.role === 'admin' && bcrypt.compareSync(password, user.password);
 
-    await run('INSERT INTO login_attempts (username, ip, success) VALUES (?, ?, ?)', [username, ip, success ? 1 : 0]);
+    try {
+      await run('INSERT INTO login_attempts (username, ip, success) VALUES (?, ?, ?)', [username, ip, success ? 1 : 0]);
+    } catch (_) {}
 
     if (!user || !success || user.role !== 'admin') {
       return res.status(401).json({ code: 401, message: 'بيانات الدخول غير صحيحة أو الحساب ليس أدمن' });
