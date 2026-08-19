@@ -26,13 +26,14 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 
 app.use(cors({
   origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
     if (allowedOrigins.length === 0) {
       if (process.env.NODE_ENV === 'production') {
         return callback(new Error('CORS: ALLOWED_ORIGINS is not configured'));
       }
       return callback(null, true);
     }
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -40,7 +41,7 @@ app.use(cors({
   },
   credentials: true,
 }));
-app.use(express.json({ limit: '16kb' }));
+app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
 
 const apiLimiter = rateLimit({
