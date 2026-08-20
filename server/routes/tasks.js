@@ -43,10 +43,10 @@ router.get('/', authUser, async (req, res) => {
     const sql = ratedIds.length
       ? `SELECT h.*, (SELECT ROUND(AVG(r.stars),1) FROM ratings r WHERE r.hotel_id = h.id) as avg_rating,
          (SELECT COUNT(*) FROM ratings r WHERE r.hotel_id = h.id) as rating_count
-         FROM hotels h WHERE h.active = 1 AND h.id NOT IN (${placeholders}) LIMIT ?`
+         FROM hotels h WHERE h.active = 1 AND h.id NOT IN (${placeholders}) ORDER BY RANDOM() LIMIT ?`
       : `SELECT h.*, (SELECT ROUND(AVG(r.stars),1) FROM ratings r WHERE r.hotel_id = h.id) as avg_rating,
          (SELECT COUNT(*) FROM ratings r WHERE r.hotel_id = h.id) as rating_count
-         FROM hotels h WHERE h.active = 1 LIMIT ?`;
+         FROM hotels h WHERE h.active = 1 ORDER BY RANDOM() LIMIT ?`;
     hotels = await all(sql, [...ratedIds, user.daily_videos - ratedCount]);
   }
 
