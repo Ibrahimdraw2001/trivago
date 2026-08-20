@@ -41,22 +41,7 @@ if (USE_REMOTE) {
   };
 
   tx = async (fn) => {
-    return await db.transaction(async (txExec) => {
-      const txRun = (sql, params = []) =>
-        txExec.execute({ sql, args: params }).then(rs => ({ lastID: Number(rs.lastInsertRowid), changes: rs.rowsAffected }));
-      const txGet = (sql, params = []) =>
-        txExec.execute({ sql, args: params }).then(rs => rs.rows[0]);
-      const txAll = (sql, params = []) =>
-        txExec.execute({ sql, args: params }).then(rs => rs.rows);
-
-      const savedRun = run, savedGet = get, savedAll = all;
-      run = txRun; get = txGet; all = txAll;
-      try {
-        return await fn();
-      } finally {
-        run = savedRun; get = savedGet; all = savedAll;
-      }
-    });
+    return await fn();
   };
 } else {
   const sqlite3 = require('sqlite3').verbose();
