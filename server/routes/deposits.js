@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const { run, get, all } = require('../db');
 const { authUser } = require('../middleware/auth');
+const { logActivity } = require('../helpers/activity');
 
 const TXID_RE = /^[A-Za-z0-9]{8,128}$/;
 
@@ -20,6 +21,7 @@ router.post('/', authUser, async (req, res) => {
       return res.status(400).json({ code: 400, message: 'رقم العملية مستخدم بالفعل' });
     }
     const result = await run('INSERT INTO deposits (user_id, amount, sham_txn_id, txn_id) VALUES (?, ?, ?, ?)', [req.user.id, value, txnId, txnId]);
+    logActivity(req.user.id, 'submit_deposit', `إيداع $${value} بانتظار الموافقة`);
     res.json({ code: 0, data: { id: result.lastID, status: 'pending' }, message: 'تم إرسال طلب الإيداع عبر USDT، بانتظار موافقة الأدمن' });
   } catch (err) {
     res.status(500).json({ code: 500, message: 'حدث خطأ في الإيداع' });

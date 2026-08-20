@@ -14,6 +14,8 @@ import Tasks from './pages/Tasks';
 import Transactions from './pages/Transactions';
 import Account from './pages/Account';
 import Referrals from './pages/Referrals';
+import Activity from './pages/Activity';
+import Stats from './pages/Stats';
 import { ProtectedRoute, AdminRoute } from './components/Routes';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminLayout from './pages/admin/AdminLayout';
@@ -56,6 +58,8 @@ export default function App() {
         <Route path="tasks" element={<Tasks />} />
         <Route path="transactions" element={<Transactions />} />
         <Route path="referrals" element={<Referrals />} />
+        <Route path="activity" element={<Activity />} />
+        <Route path="stats" element={<Stats />} />
         <Route path="account" element={<Account />} />
       </Route>
 

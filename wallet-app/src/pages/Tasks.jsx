@@ -12,6 +12,10 @@ export default function Tasks() {
   const [error, setError] = useState('');
   const [loadingRate, setLoadingRate] = useState(false);
   const [confirmHotel, setConfirmHotel] = useState(null);
+  const [cities, setCities] = useState([]);
+  const [filterCity, setFilterCity] = useState('');
+  const [filterCountry, setFilterCountry] = useState('');
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const load = () => {
     api.tasks.today().then(setData).catch(() => {});
@@ -19,6 +23,7 @@ export default function Tasks() {
 
   useEffect(() => {
     load();
+    api.tasksCities().then((res) => setCities(res)).catch(() => {});
   }, []);
 
   const rate = async (hotelId) => {
@@ -28,6 +33,8 @@ export default function Tasks() {
     try {
       const result = await api.tasks.rate({ hotelId, stars: selected[hotelId] });
       notify(`تم تقييم الفندق وحصلت على ${result.reward}$`);
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 2000);
       refresh().catch(() => {});
       load();
     } catch (err) {
@@ -74,16 +81,55 @@ export default function Tasks() {
 
       {error && <div className="alert alert-error">{error}</div>}
 
+      {showSuccess && (
+        <div className="success-flash">
+          <span className="success-check">✅</span>
+        </div>
+      )}
+
+      {data.hotels.length > 0 && cities.length > 0 && (
+        <div className="hotel-filters">
+          <select value={filterCountry} onChange={(e) => { setFilterCountry(e.target.value); setFilterCity(''); }}>
+            <option value="">جميع الدول</option>
+            {[...new Set(cities.map(c => c.country))].map(c => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+          <select value={filterCity} onChange={(e) => setFilterCity(e.target.value)}>
+            <option value="">جميع المدن</option>
+            {cities
+              .filter(c => !filterCountry || c.country === filterCountry)
+              .map(c => (
+                <option key={c.city} value={c.city}>{c.city}</option>
+              ))}
+          </select>
+        </div>
+      )}
+
       {data.hotels.length === 0 ? (
-        <div className="m-card" style={{ textAlign: 'center', padding: 30 }}>
-          <p style={{ color: '#9aa3b2' }}>
+        <div className="m-card all-done-card" style={{ textAlign: 'center', padding: 30 }}>
+          <div className="all-done-icon">🎉</div>
+          <h3 style={{ fontSize: 17, marginBottom: 8 }}>
             {data.ratedCount >= data.dailyLimit
-              ? 'أكملت تقييمات اليوم! عد غداً لفنادق جديدة.'
-              : 'لا توجد فنادق متاحة حالياً، يرجى مراجعة الأدمن لاحقاً.'}
+              ? 'أحسنت! أكملت تقييمات اليوم'
+              : 'لا توجد فنادق متاحة حالياً'}
+          </h3>
+          <p style={{ color: '#9aa3b2', fontSize: 13 }}>
+            {data.ratedCount >= data.dailyLimit
+              ? 'عُد غداً لتكسب المزيد من المكافآت على فنادق جديدة.'
+              : 'يرجى مراجعة الأدمن لاحقاً أو ترقية مستواك لتقييم فنادق إضافية.'}
           </p>
+          {data.ratedCount >= data.dailyLimit && (
+            <div className="all-done-reward">
+              مكافآت اليوم: <strong>{(data.ratedCount * data.rewardPerHotel).toFixed(2)}$</strong>
+            </div>
+          )}
         </div>
       ) : (
-        data.hotels.map((hotel) => (
+        data.hotels
+          .filter(h => !filterCountry || h.country === filterCountry)
+          .filter(h => !filterCity || h.city === filterCity)
+          .map((hotel) => (
           <div className="hotel-card" key={hotel.id}>
             <div className={`hotel-img ${hotel.image ? 'has-img' : ''}`}>
               <div className="hotel-cover">
@@ -116,7 +162,7 @@ export default function Tasks() {
               </div>
               {hotel.description && <p className="hotel-desc">{hotel.description}</p>}
               <div className="stars-row">
-                {Array.from({ length: 11 }, (_, i) => i).map((star) => (
+                {Array.from({ length: 10 }, (_, i) => i + 1).map((star) => (
                   <button
                     key={star}
                     type="button"

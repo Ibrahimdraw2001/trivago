@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { HomeIcon, TaskIcon, CrownIcon, DepositIcon, WithdrawIcon, MoonIcon, SunIcon, InviteIcon } from './icons';
+import { HomeIcon, TaskIcon, CrownIcon, DepositIcon, WithdrawIcon, MoonIcon, SunIcon, InviteIcon, HistoryIcon } from './icons';
 import TrivagoLogo from './TrivagoLogo';
 
 export default function Layout() {
@@ -21,6 +21,9 @@ export default function Layout() {
         <div className="topbar-actions">
           <button className="theme-toggle" type="button" onClick={toggle} aria-label="تبديل الوضع الليلي">
             {dark ? <SunIcon /> : <MoonIcon />}
+          </button>
+          <button className="topbar-btn" type="button" onClick={() => navigate('/stats')}>
+            📊
           </button>
           <button className="topbar-btn" type="button" onClick={() => navigate('/account')}>
             {user?.username}
@@ -55,6 +58,10 @@ export default function Layout() {
         <NavLink to="/withdraw">
           <WithdrawIcon />
           <span>سحب</span>
+        </NavLink>
+        <NavLink to="/activity">
+          <HistoryIcon />
+          <span>النشاط</span>
         </NavLink>
         <NavLink to="/referrals">
           <InviteIcon />

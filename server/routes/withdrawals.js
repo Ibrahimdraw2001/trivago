@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const { run, get, all } = require('../db');
 const { authUser } = require('../middleware/auth');
+const { logActivity } = require('../helpers/activity');
 
 const MIN_WITHDRAW = 10;
 const BEP20_RE = /^0x[0-9a-fA-F]{40}$/;
@@ -44,6 +45,7 @@ router.post('/', authUser, async (req, res) => {
     );
     await run('INSERT INTO transactions (user_id, type, amount, balance_after, description) VALUES (?, ?, ?, ?, ?)',
       [req.user.id, 'withdraw', -value, newBalance, 'طلب سحب بانتظار الموافقة']);
+    logActivity(req.user.id, 'submit_withdrawal', `سحب $${value} إلى ${walletAddress.slice(0, 10)}...`);
     res.json({ code: 0, data: { id: insertResult.lastID, status: 'pending' }, message: 'تم إرسال طلب السحب عبر USDT، بانتظار موافقة الأدمن' });
   } catch (err) {
     res.status(500).json({ code: 500, message: 'حدث خطأ في السحب' });

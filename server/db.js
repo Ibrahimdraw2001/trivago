@@ -280,6 +280,14 @@ async function init() {
     await run('UPDATE users SET referral_code = ? WHERE id = ?', [code, u.id]);
   }
 
+  await run(`CREATE TABLE IF NOT EXISTS activity_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    action TEXT NOT NULL,
+    details TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )`);
+
   const depositCols = await all('PRAGMA table_info(deposits)');
   if (!depositCols.some((c) => c.name === 'txn_id')) {
     await run('ALTER TABLE deposits ADD COLUMN txn_id TEXT');

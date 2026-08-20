@@ -2,6 +2,7 @@ const router = require('express').Router();
 const bcrypt = require('bcryptjs');
 const { run, get, generateRefCode } = require('../db');
 const { sign, authUser } = require('../middleware/auth');
+const { logActivity } = require('../helpers/activity');
 
 const PASSWORD_RE = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
 const MAX_REFERRALS = 15;
@@ -78,6 +79,7 @@ router.post('/register', async (req, res) => {
     const user = await get('SELECT id, username, role, balance, level_id, referral_code, token_version FROM users WHERE id = ?', [result.lastID]);
     const token = sign(user);
     setAuthCookie(res, token);
+    logActivity(result.lastID, 'register', `تسجيل حساب جديد${inviterId ? ' عبر دعوة' : ''}`);
     res.json({ code: 0, data: { user } });
   } catch (err) {
     res.status(500).json({ code: 500, message: 'حدث خطأ في التسجيل' });
@@ -119,6 +121,7 @@ router.post('/login', async (req, res) => {
     const payload = { id: user.id, username: user.username, role: user.role, balance: user.balance, level_id: user.level_id, token_version: user.token_version || 0 };
     const token = sign(payload);
     setAuthCookie(res, token);
+    logActivity(user.id, 'login', `تسجيل دخول ناجح`);
     res.json({ code: 0, data: { user: payload } });
   } catch (err) {
     res.status(500).json({ code: 500, message: 'حدث خطأ في تسجيل الدخول' });
@@ -160,6 +163,7 @@ router.post('/admin-login', async (req, res) => {
     const payload = { id: user.id, username: user.username, role: user.role, balance: user.balance, level_id: user.level_id, token_version: user.token_version || 0 };
     const token = sign(payload);
     setAuthCookie(res, token);
+    logActivity(user.id, 'admin_login', `تسجيل دخول الأدمن`);
     res.json({ code: 0, data: { user: payload } });
   } catch (err) {
     res.status(500).json({ code: 500, message: 'حدث خطأ في تسجيل الدخول' });
@@ -201,6 +205,7 @@ router.post('/change-password', authUser, async (req, res) => {
     }
     const hash = bcrypt.hashSync(newPassword, 10);
     await run('UPDATE users SET password = ?, token_version = token_version + 1 WHERE id = ?', [hash, user.id]);
+    logActivity(user.id, 'change_password', 'تغيير كلمة المرور');
     res.json({ code: 0, message: 'تم تغيير كلمة المرور بنجاح' });
   } catch (err) {
     res.status(500).json({ code: 500, message: 'حدث خطأ في تغيير كلمة المرور' });

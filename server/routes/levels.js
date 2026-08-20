@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const { run, get, all, tx } = require('../db');
 const { authUser } = require('../middleware/auth');
+const { logActivity } = require('../helpers/activity');
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10);
@@ -85,6 +86,7 @@ router.post('/purchase', authUser, async (req, res) => {
     });
 
     const level = await get('SELECT name FROM levels WHERE id = ?', [result.level_id]);
+    logActivity(req.user.id, 'purchase_level', `شراء ${level.name} بسعر $${(await get('SELECT price FROM levels WHERE id = ?', [result.level_id])).price}`);
     res.json({ code: 0, data: result, message: `تم تفعيل ${level.name}` });
   } catch (err) {
     const status = err.status || 500;

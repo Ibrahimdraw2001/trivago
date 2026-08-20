@@ -63,6 +63,10 @@ export default function AdminDashboard() {
     }
   };
 
+  const exportCsv = (type) => {
+    window.open(api.admin.exportCsv(type), '_blank');
+  };
+
   if (!stats) return <div className="center-loading">جارٍ التحميل...</div>;
 
   return (
@@ -90,6 +94,36 @@ export default function AdminDashboard() {
             <div className="stat-label">عدد الفنادق</div>
             <div className="stat-value">{stats.hotels}</div>
           </div>
+          <div className="stat-card">
+            <div className="stat-label">إجمالي الإيداعات المقبولة</div>
+            <div className="stat-value">{stats.totalDeposits}$</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-label">إجمالي السحوبات المقبولة</div>
+            <div className="stat-value">{stats.totalWithdrawals}$</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-label">إجمالي التقييمات</div>
+            <div className="stat-value">{stats.totalRatings}</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-label">الإحالات الناجحة</div>
+            <div className="stat-value">{stats.totalReferrals}</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="card">
+        <h2>تصدير البيانات (CSV)</h2>
+        <p style={{ color: '#6b7280', fontSize: 13, marginBottom: 12 }}>
+          تصدير البيانات بصيغة CSV للاستخدام في برامج الجداول.
+        </p>
+        <div className="stat-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))' }}>
+          <button className="btn-gray" onClick={() => exportCsv('users')}>📥 المستخدمون</button>
+          <button className="btn-gray" onClick={() => exportCsv('deposits')}>📥 الإيداعات</button>
+          <button className="btn-gray" onClick={() => exportCsv('withdrawals')}>📥 السحوبات</button>
+          <button className="btn-gray" onClick={() => exportCsv('transactions')}>📥 العمليات</button>
+          <button className="btn-gray" onClick={() => exportCsv('ratings')}>📥 التقييمات</button>
         </div>
       </div>
 

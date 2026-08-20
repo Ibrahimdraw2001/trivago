@@ -2,6 +2,7 @@ const router = require('express').Router();
 const bcrypt = require('bcryptjs');
 const { run, get, all } = require('../db');
 const { authUser, authAdmin } = require('../middleware/auth');
+const { logActivity } = require('../helpers/activity');
 
 router.use(authUser, authAdmin);
 
@@ -11,6 +12,10 @@ router.get('/stats', async (req, res) => {
   const pendingWithdrawals = await get('SELECT COUNT(*) as count FROM withdrawals WHERE status = ?', ['pending']);
   const totalBalance = await get('SELECT COALESCE(SUM(balance),0) as sum FROM users WHERE role = ?', ['user']);
   const hotels = await get('SELECT COUNT(*) as count FROM hotels');
+  const totalDeposits = await get('SELECT COALESCE(SUM(amount),0) as sum FROM deposits WHERE status = ?', ['approved']);
+  const totalWithdrawals = await get('SELECT COALESCE(SUM(amount),0) as sum FROM withdrawals WHERE status = ?', ['approved']);
+  const totalRatings = await get('SELECT COUNT(*) as count FROM ratings');
+  const totalReferrals = await get('SELECT COUNT(*) as count FROM referrals WHERE status = ?', ['completed']);
   res.json({
     code: 0,
     data: {
@@ -19,6 +24,10 @@ router.get('/stats', async (req, res) => {
       pendingWithdrawals: pendingWithdrawals.count,
       totalBalance: totalBalance.sum,
       hotels: hotels.count,
+      totalDeposits: totalDeposits.sum,
+      totalWithdrawals: totalWithdrawals.sum,
+      totalRatings: totalRatings.count,
+      totalReferrals: totalReferrals.count,
     },
   });
 });
@@ -107,6 +116,7 @@ router.post('/deposits/:id/approve', async (req, res) => {
     const user = await get('SELECT balance FROM users WHERE id = ?', [deposit.user_id]);
     await run('INSERT INTO transactions (user_id, type, amount, balance_after, description) VALUES (?, ?, ?, ?, ?)',
       [deposit.user_id, 'deposit', deposit.amount, user.balance, 'إيداع عبر USDT']);
+    logActivity(deposit.user_id, 'deposit_approved', `إيداع $${deposit.amount} تمت الموافقة عليه`);
     res.json({ code: 0, message: 'تمت الموافقة على الإيداع وإضافة الرصيد' });
   } catch (err) {
     res.status(500).json({ code: 500, message: 'حدث خطأ في الموافقة على الإيداع' });
@@ -150,6 +160,7 @@ router.post('/withdrawals/:id/approve', async (req, res) => {
     if (result.changes === 0) {
       return res.status(400).json({ code: 400, message: 'تمت معالجة هذا الطلب مسبقاً أو غير موجود' });
     }
+    logActivity((await get('SELECT user_id FROM withdrawals WHERE id = ?', [req.params.id])).user_id, 'withdrawal_approved', `سحب تمت الموافقة عليه`);
     res.json({ code: 0, message: 'تم تحويل المبلغ عبر USDT والموافقة على السحب' });
   } catch (err) {
     res.status(500).json({ code: 500, message: 'حدث خطأ في الموافقة على السحب' });
@@ -288,6 +299,76 @@ router.put('/password', async (req, res) => {
     res.json({ code: 0, message: 'تم تغيير كلمة المرور بنجاح' });
   } catch (err) {
     res.status(500).json({ code: 500, message: 'حدث خطأ في تغيير كلمة المرور' });
+  }
+});
+
+router.get('/export/:type', async (req, res) => {
+  try {
+    const { type } = req.params;
+    let rows;
+    let filename;
+    let headers;
+
+    if (type === 'users') {
+      rows = await all(
+        `SELECT u.id, u.username, u.balance, u.level_id, l.name as level_name, u.referral_code, u.created_at
+         FROM users u LEFT JOIN levels l ON u.level_id = l.id WHERE u.role = 'user' ORDER BY u.id`
+      );
+      headers = ['ID', 'Username', 'Balance', 'Level', 'Referral Code', 'Registered'];
+      filename = 'users.csv';
+    } else if (type === 'deposits') {
+      rows = await all(
+        `SELECT d.id, u.username, d.amount, d.txn_id, d.status, d.created_at, d.processed_at
+         FROM deposits d JOIN users u ON d.user_id = u.id ORDER BY d.created_at DESC`
+      );
+      headers = ['ID', 'Username', 'Amount', 'TxID', 'Status', 'Created', 'Processed'];
+      filename = 'deposits.csv';
+    } else if (type === 'withdrawals') {
+      rows = await all(
+        `SELECT w.id, u.username, w.amount, w.wallet_address, w.status, w.created_at, w.processed_at
+         FROM withdrawals w JOIN users u ON w.user_id = u.id ORDER BY w.created_at DESC`
+      );
+      headers = ['ID', 'Username', 'Amount', 'Wallet', 'Status', 'Created', 'Processed'];
+      filename = 'withdrawals.csv';
+    } else if (type === 'transactions') {
+      rows = await all(
+        `SELECT t.id, u.username, t.type, t.amount, t.balance_after, t.description, t.created_at
+         FROM transactions t JOIN users u ON t.user_id = u.id ORDER BY t.created_at DESC LIMIT 1000`
+      );
+      headers = ['ID', 'Username', 'Type', 'Amount', 'Balance After', 'Description', 'Date'];
+      filename = 'transactions.csv';
+    } else if (type === 'ratings') {
+      rows = await all(
+        `SELECT r.id, u.username, h.name as hotel_name, r.stars, r.reward, r.created_at
+         FROM ratings r JOIN users u ON r.user_id = u.id JOIN hotels h ON r.hotel_id = h.id ORDER BY r.created_at DESC LIMIT 1000`
+      );
+      headers = ['ID', 'Username', 'Hotel', 'Stars', 'Reward', 'Date'];
+      filename = 'ratings.csv';
+    } else {
+      return res.status(400).json({ code: 400, message: 'نوع غير صحيح' });
+    }
+
+    const csvEscape = (v) => {
+      const s = String(v ?? '');
+      if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+        return '"' + s.replace(/"/g, '""') + '"';
+      }
+      return s;
+    };
+
+    const csvRows = [headers.join(',')];
+    for (const row of rows) {
+      const vals = Object.values(row).map(csvEscape);
+      csvRows.push(vals.join(','));
+    }
+
+    const csvContent = '\uFEFF' + csvRows.join('\r\n');
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(csvContent);
+  } catch (err) {
+    console.error('CSV export error:', err);
+    res.status(500).json({ code: 500, message: 'حدث خطأ في تصدير البيانات' });
   }
 });
 

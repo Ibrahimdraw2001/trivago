@@ -1,10 +1,24 @@
 const router = require('express').Router();
 const { run, get, all, tx } = require('../db');
 const { authUser } = require('../middleware/auth');
+const { logActivity } = require('../helpers/activity');
+const { getCached, setCache } = require('../helpers/cache');
+
+const HOTELS_CACHE_TTL = 60 * 1000;
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10);
 }
+
+router.get('/cities', authUser, async (req, res) => {
+  const cacheKey = 'hotel_cities';
+  let cities = getCached(cacheKey, 5 * 60 * 1000);
+  if (!cities) {
+    cities = await all("SELECT DISTINCT city, country FROM hotels WHERE active = 1 AND city != '' ORDER BY country, city");
+    setCache(cacheKey, cities);
+  }
+  res.json({ code: 0, data: cities });
+});
 
 router.get('/', authUser, async (req, res) => {
   const user = await get(
@@ -132,8 +146,10 @@ router.post('/rate', authUser, async (req, res) => {
       await run('INSERT INTO transactions (user_id, type, amount, balance_after, description) VALUES (?, ?, ?, ?, ?)',
         [req.user.id, 'reward', reward, updatedUser.balance, `مكافأة تقييم: ${hotel.name}`]);
 
-      return { reward, balance: updatedUser.balance };
+      return { reward, balance: updatedUser.balance, hotelName: hotel.name };
     });
+
+    logActivity(req.user.id, 'rate_hotel', `تقييم فندق ${result.hotelName}: ${value} نجوم، مكافأة ${result.reward}$`);
 
     res.json({ code: 0, data: result, message: 'تم حفظ تقييمك وحصولك على المكافأة' });
   } catch (err) {

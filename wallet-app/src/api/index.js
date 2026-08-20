@@ -29,6 +29,12 @@ export const api = {
     list: () => request('/referrals'),
     stats: () => request('/referrals/stats'),
   },
+  activity: {
+    mine: (page = 1) => request(`/activity?page=${page}&limit=20`),
+    all: (page = 1) => request(`/activity/all?page=${page}&limit=50`),
+  },
+  userStats: () => request('/user-stats'),
+  tasksCities: () => request('/tasks/cities'),
   settings: {
     depositWallet: () => request('/settings/deposit-wallet'),
     updateDepositWallet: (data) => request('/settings/deposit-wallet', { method: 'PUT', body: data }),
@@ -54,5 +60,6 @@ export const api = {
     addLevel: (data) => request('/admin/levels', { method: 'POST', body: data }),
     updateLevel: (id, data) => request(`/admin/levels/${id}`, { method: 'PUT', body: data }),
     deleteLevel: (id) => request(`/admin/levels/${id}`, { method: 'DELETE' }),
+    exportCsv: (type) => `/api/admin/export/${type}`,
   },
 };
