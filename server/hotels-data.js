@@ -1,895 +1,284 @@
 const HOTELS = [
   // --- الإمارات ---
   {
-    name: 'برج العرب',
+    name: 'Holiday Inn Dubai Jumeirah Village Circle by IHG
+3 عدد النجوم',
     city: 'دبي',
     country: 'الإمارات',
-    image: 'https://images.unsplash.com/photo-1518684079-3c830dcef090?w=800&h=500&fit=crop&q=80',
-    description: 'أشهر فندق في العالم بتصميم الشراع الفاخر وإطلالات على الخليج.'
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/partner-images/f3/10/0c57b2f98413a6a1a5828364cdf1548b683149bc425472e19d8262aed84a.jpeg',
+    description: 'إقامة مميزة في دبي - 8.9 - ممتاز (3,916 من النقاط).'
   },
   {
-    name: 'أتلانتس النخلة',
+    name: 'دبل تري من هيلتون دبي إم سكوير فندق وشقق فندقية
+5 عدد النجوم',
     city: 'دبي',
     country: 'الإمارات',
-    image: 'https://images.unsplash.com/photo-1569982175971-d92b01cf8694?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع أسطوري على جزيرة النخلة مع أكواريوم ضخم وشاطئ خاص.'
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/partner-images/06/e7/d7f11ec24b7a48da7adf114ffc2c85f70f30f9858aefc7da919ce1570b71.jpeg',
+    description: 'إقامة مميزة في دبي - 9.3 - ممتاز (15,688 من النقاط).'
   },
   {
-    name: 'جميرا بيتش',
+    name: 'فندق شاطئ جميرا
+5 عدد النجوم',
     city: 'دبي',
     country: 'الإمارات',
-    image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع فاخر على الشاطئ بمرافق مائية ومطاعم عالمية.'
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/hotelier-images/e0/0e/87d734764df34c0e35df38c30926a9b8c26e980cc06794d9ca698ebabee6.jpeg',
+    description: 'إقامة مميزة في دبي - 9.1 - ممتاز (27,224 من النقاط).'
   },
   {
-    name: 'رافلز دبي',
+    name: 'Marriott Marquis Dubai Creek
+5 عدد النجوم',
     city: 'دبي',
     country: 'الإمارات',
-    image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&h=500&fit=crop&q=80',
-    description: 'فخامة استثنائية مع خدمة بوتل خاصة ومطاعم حائزة على نجوم.'
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/hotelier-images/95/3b/e101cd200427c9b99ace0c21807a235b1d31cbad86673ba6775015fd9d11.jpeg',
+    description: 'إقامة مميزة في دبي - 9.3 - ممتاز (5,535 من النقاط).'
   },
   {
-    name: 'أرماني هوتيل',
+    name: 'العنوان دبي مول
+5 عدد النجوم',
     city: 'دبي',
     country: 'الإمارات',
-    image: 'https://images.unsplash.com/photo-1525874684015-58374d139996?w=800&h=500&fit=crop&q=80',
-    description: 'تصميم راقٍ من جورجيو أرماني داخل برج خليفة.'
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/partner-images/4b/ff/d6895e071fd2d00351d6641232093c9be641cdea212ce2d84b9fe1c0ae1c.jpeg',
+    description: 'إقامة مميزة في دبي - 9.4 - ممتاز (31,549 من النقاط).'
   },
   {
-    name: 'فورسيزونز دبي',
+    name: 'Grand Hyatt Dubai
+5 عدد النجوم',
     city: 'دبي',
     country: 'الإمارات',
-    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=500&fit=crop&q=80',
-    description: 'إقامة راقية على الواجهة البحرية بأجواء هادئة.'
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/partner-images/fb/62/8c4e1825889184592a5bc3200c9d6c61e4c6c940d4c3d2034d499ac5187e.jpeg',
+    description: 'إقامة مميزة في دبي - 9.1 - ممتاز (35,683 من النقاط).'
   },
   {
-    name: 'ميلينيوم داون تاون',
+    name: 'منتجع سنتارا ميراج بيتش دبي
+4 عدد النجوم',
     city: 'دبي',
     country: 'الإمارات',
-    image: 'https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?w=800&h=500&fit=crop&q=80',
-    description: 'فندق عصري قريب من نافورة دبي ومركز دبي مول.'
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/partner-images/43/c5/b6634c5d88c8c6954a6595f0f3b1a8510480b41b46d668f87097768194be.jpeg',
+    description: 'إقامة مميزة في دبي - يُحَدَّد مدى الرَواج استنادا إلى العدد الإجمالي لتقييمات النزلاء لمكان الإقامة هذا بالمقارنة مع أماكن الإقامة الأخرى الموجودة في دبي والتي تنتمي إلى نفس النوع وتصنيف النجوم.'
   },
   {
-    name: 'قصر الإمارات',
-    city: 'أبوظبي',
+    name: 'فندق جي دبليو ماريوت ماركي دبي
+5 عدد النجوم',
+    city: 'دبي',
     country: 'الإمارات',
-    image: 'https://images.unsplash.com/photo-1548705355-2e75c1f0f3d7?w=800&h=500&fit=crop&q=80',
-    description: 'قصر فندقي فاخر بشواطئ خاصة ومرافق ملكية.'
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/hotelier-images/94/e8/f3bbeb124d8c2c06d879e38c71ff66d64e26b5fdc5a884016d3c96a36a86.jpeg',
+    description: 'إقامة مميزة في دبي - 9.3 - ممتاز (43,324 من النقاط).'
   },
   {
-    name: 'سانت ريجيس أبوظبي',
-    city: 'أبوظبي',
+    name: 'كونراد دبي
+5 عدد النجوم',
+    city: 'دبي',
     country: 'الإمارات',
-    image: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&h=500&fit=crop&q=80',
-    description: 'فندق راقٍ على جزيرة السعديات بإطلالات على البحر.'
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/partner-images/8e/b3/2f3cf3ac43e92a9f08ef7ebf48aee29aae37e6eaae530f1ea9f5ba737c69.jpeg',
+    description: 'إقامة مميزة في دبي - 9.3 - ممتاز (35,651 من النقاط).'
   },
-
-  // --- تركيا ---
   {
-    name: 'سيراغان بالاس',
-    city: 'إسطنبول',
-    country: 'تركيا',
-    image: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=800&h=500&fit=crop&q=80',
-    description: 'قصر عثماني تاريخي تحول إلى فندق فاخر على البوسفور.'
+    name: 'The St. Regis Downtown Dubai
+5 عدد النجوم',
+    city: 'دبي',
+    country: 'الإمارات',
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/hotelier-images/3a/e5/a9c4acfb9904298afba722474d62a45e62a6b397211fb619446ea7822c60.jpeg',
+    description: 'إقامة مميزة في دبي - 9.3 - ممتاز (9,317 من النقاط).'
   },
   {
-    name: 'شيراتون إسطنبول',
-    city: 'إسطنبول',
-    country: 'تركيا',
-    image: 'https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=800&h=500&fit=crop&q=80',
-    description: 'فندق عصري يطل على مضيق البوسفور بمرافق متكاملة.'
+    name: 'فندق الريتز- كارلتون٬ إكزيكيوتيف ريزيدنسيز
+5 عدد النجوم',
+    city: 'دبي',
+    country: 'الإمارات',
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/hotelier-images/6e/eb/5b2ce10096d1d9abf400b3a4f86e42cbb7d83e9d42c788668f06a7ff7e50.jpeg',
+    description: 'إقامة مميزة في دبي - 9.3 - ممتاز (10,974 من النقاط).'
   },
   {
-    name: 'آيا صوفيا مانشنز',
-    city: 'إسطنبول',
-    country: 'تركيا',
-    image: 'https://images.unsplash.com/photo-1527838832700-5059252407fa?w=800&h=500&fit=crop&q=80',
-    description: 'إقامة فاخرة في قلب المدينة القديمة قرب المسجد الأزرق.'
+    name: 'The First Collection Dubai Business Bay
+4 عدد النجوم',
+    city: 'دبي',
+    country: 'الإمارات',
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/hotelier-images/a2/6c/ba7bb9d627bdf74273a7a69ccafe732a40117e726ad7f088a263a7c91781.jpeg',
+    description: 'إقامة مميزة في دبي - 8.8 - ممتاز (18,027 من النقاط).'
   },
   {
-    name: 'السويسري غراند',
-    city: 'إسطنبول',
-    country: 'تركيا',
-    image: 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800&h=500&fit=crop&q=80',
-    description: 'فندق كبير بخدمات خمس نجوم ومسبح داخلي.'
+    name: 'فندق وأبراج شيراتون خور دبي
+5 عدد النجوم',
+    city: 'دبي',
+    country: 'الإمارات',
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/hotelier-images/c5/04/6a3f2c8951d87f545517a7d3951ec60f09d1c4402ff4d1e3a14b9dcdcd28.jpeg',
+    description: 'إقامة مميزة في دبي - 9.0 - ممتاز (13,073 من النقاط).'
   },
   {
-    name: 'رافلز إسطنبول',
-    city: 'إسطنبول',
-    country: 'تركيا',
-    image: 'https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?w=800&h=500&fit=crop&q=80',
-    description: 'فخامة حديثة في منطقة زورلو سنتر التجارية.'
+    name: 'Sheraton Grand Hotel, Dubai
+5 عدد النجوم',
+    city: 'دبي',
+    country: 'الإمارات',
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/partner-images/6c/6a/e8dc7401bb32c52b6c8798d782fc7688ea6990ed81ba20d4508864a0d82c.jpeg',
+    description: 'إقامة مميزة في دبي - 9.1 - ممتاز (15,803 من النقاط).'
   },
   {
-    name: 'أندريا أنطاليا',
-    city: 'أنطاليا',
-    country: 'تركيا',
-    image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع شامل على شواطئ البحر المتوسط التركية.'
+    name: 'Le Méridien Dubai Hotel & Conference Centre
+5 عدد النجوم',
+    city: 'دبي',
+    country: 'الإمارات',
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/partner-images/e6/7a/b0e1052fc98812641faecd42a2837ca2c4b31cacaf7f6b9c5b81c31dec07.jpeg',
+    description: 'إقامة مميزة في دبي - 9.0 - ممتاز (28,860 من النقاط).'
   },
   {
-    name: 'ريمي أنطاليا',
-    city: 'أنطاليا',
-    country: 'تركيا',
-    image: 'https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع عائلي جميل بإطلالات على المدينة القديمة.'
+    name: 'Mercure Dubai Barsha Heights Hotel Suites And Apartments
+4 عدد النجوم',
+    city: 'دبي',
+    country: 'الإمارات',
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/partner-images/8b/62/460d5e3d42271e52823e3239f546f78dd2144218ae3e1bf8ea90a47d797a.jpeg',
+    description: 'إقامة مميزة في دبي - 8.7 - ممتاز (34,938 من النقاط).'
   },
-
-  // --- مصر ---
   {
-    name: 'ماريوت القاهرة',
-    city: 'القاهرة',
-    country: 'مصر',
-    image: 'https://images.unsplash.com/photo-1572252009286-268acec5ca0a?w=800&h=500&fit=crop&q=80',
-    description: 'فندق مميز في مدينة نصر بغرف واسعة ومطاعم متنوعة.'
+    name: 'The Dubai EDITION
+5 عدد النجوم',
+    city: 'دبي',
+    country: 'الإمارات',
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/partner-images/ff/a2/62b0b0b3d837bc33aaa406499904e294ce4c74c5fa7db8c96d056549f0cc.jpeg',
+    description: 'إقامة مميزة في دبي - 8.9 - ممتاز (5,614 من النقاط).'
   },
   {
-    name: 'مينا هاوس',
-    city: 'الجيزة',
-    country: 'مصر',
-    image: 'https://images.unsplash.com/photo-1568322445389-f64ac2515020?w=800&h=500&fit=crop&q=80',
-    description: 'فندق تاريخي يطل مباشرة على أهرامات الجيزة.'
+    name: 'Palace Downtown
+5 عدد النجوم',
+    city: 'دبي',
+    country: 'الإمارات',
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/partner-images/8c/17/cfc1cc5ce71b335c3c37bf68458eda8ee5960a7f16d5dd0c2dd34156fb84.jpeg',
+    description: 'إقامة مميزة في دبي - 9.4 - ممتاز (19,822 من النقاط).'
   },
   {
-    name: 'فورسيزونز النيل',
-    city: 'القاهرة',
-    country: 'مصر',
-    image: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&h=500&fit=crop&q=80',
-    description: 'فندق فاخر على ضفاف النيل بخدمات عالمية.'
+    name: 'Canopy by Hilton Dubai Al Seef
+4 عدد النجوم',
+    city: 'دبي',
+    country: 'الإمارات',
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/partner-images/a6/d7/310ec49e1ef5da04c278157cfa40893d2abbe5d51f18728447e2ad3dda91.jpeg',
+    description: 'إقامة مميزة في دبي - 9.0 - ممتاز (6,777 من النقاط).'
   },
   {
-    name: 'ستيجنبرغر النيل',
-    city: 'القاهرة',
-    country: 'مصر',
-    image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&h=500&fit=crop&q=80',
-    description: 'فندق أنيق بموقع مركزي قرب وسط القاهرة.'
+    name: 'Hyatt Place Dubai Jumeirah Residences
+4 عدد النجوم',
+    city: 'دبي',
+    country: 'الإمارات',
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/partner-images/14/28/dac085caa83bef1dc7c67a296f1c3916c431133646a44617c445a809207d.jpeg',
+    description: 'إقامة مميزة في دبي - 8.6 - ممتاز (2,696 من النقاط).'
   },
   {
-    name: 'الكونراد الغردقة',
-    city: 'الغردقة',
-    country: 'مصر',
-    image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع على البحر الأحمر بشاطئ خاص ورياضات مائية.'
+    name: 'منتجع وسبا أنانتارا دبي ذا بالم
+5 عدد النجوم',
+    city: 'دبي',
+    country: 'الإمارات',
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/hotelier-images/14/44/6934f29a3d1ecd97477505bbeaeac68de8bec80d1e2676fff8ec38ba0b35.jpeg',
+    description: 'إقامة مميزة في دبي - 9.2 - ممتاز (43,618 من النقاط).'
   },
   {
-    name: 'أوبروي الغردقة',
-    city: 'الغردقة',
-    country: 'مصر',
-    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع هادئ بشاليهات خاصة وإطلالة على الجزر.'
-  },
-  {
-    name: 'سوميت شرم الشيخ',
-    city: 'شرم الشيخ',
-    country: 'مصر',
-    image: 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع على شاطئ خليج نعمة بأجواء استوائية.'
-  },
-  {
-    name: 'فورسيزونز شرم',
-    city: 'شرم الشيخ',
-    country: 'مصر',
-    image: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع فاخر بإطلالات على البحر الأحمر والغوص الممتاز.'
-  },
-  {
-    name: 'ماريوت الأسكندرية',
-    city: 'الإسكندرية',
-    country: 'مصر',
-    image: 'https://images.unsplash.com/photo-1555992828-ca4dbe41d294?w=800&h=500&fit=crop&q=80',
-    description: 'قصر تحول إلى فندق يطل على البحر المتوسط مباشرة.'
-  },
-  {
-    name: 'فندق ريتم الإسكندرية',
-    city: 'الإسكندرية',
-    country: 'مصر',
-    image: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&h=500&fit=crop&q=80',
-    description: 'فندق عصري على الواجهة البحرية بموقع مميز.'
-  },
-
-  // --- المغرب ---
-  {
-    name: 'رياض العرائش مراكش',
-    city: 'مراكش',
-    country: 'المغرب',
-    image: 'https://images.unsplash.com/photo-1539020140153-e479b8c22e70?w=800&h=500&fit=crop&q=80',
-    description: 'رياض مغربي تقليدي مفروش بأناقة وسط المدينة العتيقة.'
-  },
-  {
-    name: 'مامونيا مراكش',
-    city: 'مراكش',
-    country: 'المغرب',
-    image: 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=800&h=500&fit=crop&q=80',
-    description: 'من أشهر فنادق العالم بحدائق ساحرة وخدمة ملكية.'
-  },
-  {
-    name: 'سوفيتيل مراكش',
-    city: 'مراكش',
-    country: 'المغرب',
-    image: 'https://images.unsplash.com/photo-1549294413-26f195200c16?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع فاخر بمسابح واسعة وأجواء مغربية راقية.'
-  },
-  {
-    name: 'حياة ريجنسي الدار البيضاء',
-    city: 'الدار البيضاء',
-    country: 'المغرب',
-    image: 'https://images.unsplash.com/photo-1489749798305-4fea3ae63d43?w=800&h=500&fit=crop&q=80',
-    description: 'فندق عصري يطل على المحيط الأطلسي.'
-  },
-
-  // --- السعودية ---
-  {
-    name: 'فور سيزونز الرياض',
-    city: 'الرياض',
-    country: 'السعودية',
-    image: 'https://images.unsplash.com/photo-1578895101408-1a36b834405b?w=800&h=500&fit=crop&q=80',
-    description: 'فندق فاخر في برج المملكة بأعلى مستويات الخدمة.'
-  },
-  {
-    name: 'ريتز كارلتون الرياض',
-    city: 'الرياض',
-    country: 'السعودية',
-    image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&h=500&fit=crop&q=80',
-    description: 'مجمع فندقي فخم بحدائق ومرافق متكاملة.'
-  },
-  {
-    name: 'رافلز جدة',
-    city: 'جدة',
-    country: 'السعودية',
-    image: 'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=800&h=500&fit=crop&q=80',
-    description: 'فندق أنيق على الكورنيش بإطلالات على البحر الأحمر.'
-  },
-  {
-    name: 'هيلتون جدة',
-    city: 'جدة',
-    country: 'السعودية',
-    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=500&fit=crop&q=80',
-    description: 'فندق مركزي قريب من المطار والمولات.'
-  },
-  {
-    name: 'فندق فيرمونت مكة',
-    city: 'مكة',
-    country: 'السعودية',
-    image: 'https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?w=800&h=500&fit=crop&q=80',
-    description: 'إقامة قريبة من الحرم المكي بإطلالات مميزة.'
-  },
-  {
-    name: 'أبراج الساعة مكة',
-    city: 'مكة',
-    country: 'السعودية',
-    image: 'https://images.unsplash.com/photo-1565552645632-d725f8bfc19a?w=800&h=500&fit=crop&q=80',
-    description: 'فندق ضخم داخل أبراج الساعة المطلة على الحرم مباشرة.'
-  },
-  {
-    name: 'أوبيروي المدينة',
-    city: 'المدينة',
-    country: 'السعودية',
-    image: 'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?w=800&h=500&fit=crop&q=80',
-    description: 'فندق فاخر قريب من المسجد النبوي الشريف.'
-  },
-
-  // --- بقية الدول العربية ---
-  {
-    name: 'الفصول الأربعة الدوحة',
-    city: 'الدوحة',
-    country: 'قطر',
-    image: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع فاخر على جزيرة خاصة قبالة الدوحة.'
-  },
-  {
-    name: 'شيراتون الدوحة',
-    city: 'الدوحة',
-    country: 'قطر',
-    image: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&h=500&fit=crop&q=80',
-    description: 'معلم فندقي على الكورنيش بمرافق واسعة.'
-  },
-  {
-    name: 'بانيان تري الدوحة',
-    city: 'الدوحة',
-    country: 'قطر',
-    image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&h=500&fit=crop&q=80',
-    description: 'فندق راقٍ في قلب منطقة مشيرب التاريخية.'
-  },
-  {
-    name: 'ريتز كارلتون البحرين',
-    city: 'المنامة',
-    country: 'البحرين',
-    image: 'https://images.unsplash.com/photo-1590073844006-4d888083388b?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع فاخر بشاطئ خاص على خليج البحرين.'
-  },
-  {
-    name: 'إنتركونتيننتال المنامة',
-    city: 'المنامة',
-    country: 'البحرين',
-    image: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&h=500&fit=crop&q=80',
-    description: 'فندق مركزي بإطلالات على العاصمة.'
-  },
-  {
-    name: 'الريتز الكويت',
-    city: 'مدينة الكويت',
-    country: 'الكويت',
-    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=500&fit=crop&q=80',
-    description: 'فندق فاخر على الواجهة البحرية للكويت.'
-  },
-  {
-    name: 'جراند حياة الكويت',
-    city: 'مدينة الكويت',
-    country: 'الكويت',
-    image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&h=500&fit=crop&q=80',
-    description: 'فندق أنيق قريب من الأبراج والمولات.'
-  },
-  {
-    name: 'السدرة مسقط',
-    city: 'مسقط',
-    country: 'عُمان',
-    image: 'https://images.unsplash.com/photo-1585120099597-88e4aee05388?w=800&h=500&fit=crop&q=80',
-    description: 'فندق عصري بعمارة عمانية مميزة.'
-  },
-  {
-    name: 'كيمبينسكي مسقط',
-    city: 'مسقط',
-    country: 'عُمان',
-    image: 'https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع على الشاطئ بأجواء هادئة وفخمة.'
-  },
-  {
-    name: 'الفورسيزونز عمان',
-    city: 'عمّان',
-    country: 'الأردن',
-    image: 'https://images.unsplash.com/photo-1579606032821-4e6161c81571?w=800&h=500&fit=crop&q=80',
-    description: 'فندق راقٍ على تلال عمّان بإطلالات ساحرة.'
-  },
-  {
-    name: 'القدس الذهبية',
-    city: 'عمّان',
-    country: 'الأردن',
-    image: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&h=500&fit=crop&q=80',
-    description: 'فندق مريح بموقع مركزي في جبل عمان.'
-  },
-  {
-    name: 'الموفنبيك العقبة',
-    city: 'العقبة',
-    country: 'الأردن',
-    image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع على شاطئ البحر الأحمر بمسبح خارجي.'
-  },
-  {
-    name: 'الفينيسيا بيروت',
-    city: 'بيروت',
-    country: 'لبنان',
-    image: 'https://images.unsplash.com/photo-1578894381163-e72c17f2d45f?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع راقٍ على الواجهة البحرية لبيروت.'
-  },
-  {
-    name: 'الفينيسيا جونيه',
-    city: 'جونيه',
-    country: 'لبنان',
-    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع جبلي-بحرى بإطلالات على خليج جونيه.'
-  },
-  {
-    name: 'الدانيا تونس',
-    city: 'تونس',
-    country: 'تونس',
-    image: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800&h=500&fit=crop&q=80',
-    description: 'فندق بحري أنيق في ضواحي العاصمة التونسية.'
-  },
-  {
-    name: 'الكرابلاس سوسة',
-    city: 'سوسة',
-    country: 'تونس',
-    image: 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع على الشاطئ في قلب المدينة السياحية.'
-  },
-  {
-    name: 'الفندق الفلسطيني القدس',
-    city: 'القدس',
-    country: 'فلسطين',
-    image: 'https://images.unsplash.com/photo-1579606032821-4e6161c81571?w=800&h=500&fit=crop&q=80',
-    description: 'فندق هادئ قريب من البلدة القديمة.'
-  },
-  {
-    name: 'جراند بارك بغداد',
-    city: 'بغداد',
-    country: 'العراق',
-    image: 'https://images.unsplash.com/photo-1578895101408-1a36b834405b?w=800&h=500&fit=crop&q=80',
-    description: 'فندق عصري في قلب بغداد بمرافق متكاملة.'
-  },
-  {
-    name: 'الأشجار الدولية أربيل',
-    city: 'أربيل',
-    country: 'العراق',
-    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=500&fit=crop&q=80',
-    description: 'فندق راقٍ قريب من قلعة أربيل التاريخية.'
-  },
-  {
-    name: 'فندق الشيراتون بغداد',
-    city: 'بغداد',
-    country: 'العراق',
-    image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&h=500&fit=crop&q=80',
-    description: 'فندق خمس نجوم بموقع استراتيجي وخدمة مميزة.'
-  },
-
-  // --- أوروبا ---
-  {
-    name: 'ريتز باريس',
-    city: 'باريس',
-    country: 'فرنسا',
-    image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800&h=500&fit=crop&q=80',
-    description: 'فندق أسطوري يجمع الفخامة والتاريخ في قلب باريس.'
-  },
-  {
-    name: 'فورسيزونز باريس',
-    city: 'باريس',
-    country: 'فرنسا',
-    image: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&h=500&fit=crop&q=80',
-    description: 'فندق فاخر قريب من قوس النصر بلمسة فرنسية.'
-  },
-  {
-    name: 'سوفيتيل باريس',
-    city: 'باريس',
-    country: 'فرنسا',
-    image: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&h=500&fit=crop&q=80',
-    description: 'فندق عصري بإطلالات على برج إيفل.'
-  },
-  {
-    name: 'ذا سافي لندن',
-    city: 'لندن',
-    country: 'بريطانيا',
-    image: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800&h=500&fit=crop&q=80',
-    description: 'فندق تاريخي فاخر على ضفاف نهر التايمز.'
-  },
-  {
-    name: 'ذا ريتز لندن',
-    city: 'لندن',
-    country: 'بريطانيا',
-    image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&h=500&fit=crop&q=80',
-    description: 'رمز للفخامة الباريسية-الإنجليزية في ميدان بيكاديلي.'
-  },
-  {
-    name: 'شيراتون لندن',
-    city: 'لندن',
-    country: 'بريطانيا',
-    image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&h=500&fit=crop&q=80',
-    description: 'فندق عصري قريب من ويستفيلد والمولات.'
-  },
-  {
-    name: 'أدلون برلين',
-    city: 'برلين',
-    country: 'ألمانيا',
-    image: 'https://images.unsplash.com/photo-1560969184-10fe8719e047?w=800&h=500&fit=crop&q=80',
-    description: 'فندق تاريخي فاخر قبالة بوابة براندنبورغ.'
-  },
-  {
-    name: 'رافلز برلين',
-    city: 'برلين',
-    country: 'ألمانيا',
-    image: 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800&h=500&fit=crop&q=80',
-    description: 'فندق أنيق في قلب العاصمة الألمانية.'
-  },
-  {
-    name: 'ميونيخ ماربل',
-    city: 'ميونخ',
-    country: 'ألمانيا',
-    image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&h=500&fit=crop&q=80',
-    description: 'فندق بايريشر هوف الأسطوري قرب ساحة مارين.'
-  },
-  {
-    name: 'سافوي فلورنسا',
-    city: 'فلورنسا',
-    country: 'إيطاليا',
-    image: 'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=800&h=500&fit=crop&q=80',
-    description: 'فندق كلاسيكي أنيق في قلب فلورنسا الفنية.'
-  },
-  {
-    name: 'الدنيل روما',
-    city: 'روما',
-    country: 'إيطاليا',
-    image: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&h=500&fit=crop&q=80',
-    description: 'فندق ساحر بإطلالة على السلالم الإسبانية.'
-  },
-  {
-    name: 'ميلانو أركو',
-    city: 'ميلانو',
-    country: 'إيطاليا',
-    image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&h=500&fit=crop&q=80',
-    description: 'فندق عصري قريب من الكاتدرائية الشهيرة.'
-  },
-  {
-    name: 'بريستول روما',
-    city: 'روما',
-    country: 'إيطاليا',
-    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=500&fit=crop&q=80',
-    description: 'فندق تاريخي فاخر قريب من نافورة تريفي.'
-  },
-  {
-    name: 'فينيسيا باول',
-    city: 'البندقية',
-    country: 'إيطاليا',
-    image: 'https://images.unsplash.com/photo-1514890547357-a9ee288728e0?w=800&h=500&fit=crop&q=80',
-    description: 'فندق رومانسي على القناة الكبرى في البندقية.'
-  },
-  {
-    name: 'ريتز برشلونة',
-    city: 'برشلونة',
-    country: 'إسبانيا',
-    image: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?w=800&h=500&fit=crop&q=80',
-    description: 'فندق فاخر بإطلالات على شارع باسيو دي غراسيا.'
-  },
-  {
-    name: 'الويست برشلونة',
-    city: 'برشلونة',
-    country: 'إسبانيا',
-    image: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&h=500&fit=crop&q=80',
-    description: 'فندق حديث قريب من الشاطئ بمناظر بانورامية.'
-  },
-  {
-    name: 'بالاس مدريد',
-    city: 'مدريد',
-    country: 'إسبانيا',
-    image: 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800&h=500&fit=crop&q=80',
-    description: 'فندق تاريخي فاخر قرب القصر الملكي.'
-  },
-  {
-    name: 'ماربيلا غران',
-    city: 'ماربيا',
-    country: 'إسبانيا',
-    image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع فاخر على كوستا ديل سول.'
-  },
-  {
-    name: 'الريتز كارلتون لشبونة',
-    city: 'لشبونة',
-    country: 'البرتغال',
-    image: 'https://images.unsplash.com/photo-1585208798174-6cedd86e019a?w=800&h=500&fit=crop&q=80',
-    description: 'فندق أنيق بإطلالات على نهر تاجة.'
-  },
-  {
-    name: 'سويسيوتيل جنيف',
-    city: 'جنيف',
-    country: 'سويسرا',
-    image: 'https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?w=800&h=500&fit=crop&q=80',
-    description: 'فندق راقٍ قريب من بحيرة جنيف.'
-  },
-  {
-    name: 'بورين فيينا',
-    city: 'فيينا',
-    country: 'النمسا',
-    image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&h=500&fit=crop&q=80',
-    description: 'فندق تاريخي فاخر قرب الأوبرا.'
-  },
-  {
-    name: 'الامستردام سافوي',
-    city: 'أمستردام',
-    country: 'هولندا',
-    image: 'https://images.unsplash.com/photo-1534351590666-8d4d0e62e6e9?w=800&h=500&fit=crop&q=80',
-    description: 'فندق مريح على القنوات الهولندية.'
-  },
-  {
-    name: 'أنتلانيك أثينا',
-    city: 'أثينا',
-    country: 'اليونان',
-    image: 'https://images.unsplash.com/photo-1533105079780-92b9be482077?w=800&h=500&fit=crop&q=80',
-    description: 'فندق عصري بإطلالات على الأكروبوليس.'
-  },
-  {
-    name: 'سانتوريني بلو',
-    city: 'سانتوريني',
-    country: 'اليونان',
-    image: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع بمسابح لا متناهية على كالديرا سانتوريني.'
-  },
-  {
-    name: 'ميكونوس جريس',
-    city: 'ميكونوس',
-    country: 'اليونان',
-    image: 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع راقٍ على شاطئ ميكونوس.'
-  },
-
-  // --- الأمريكتين ---
-  {
-    name: 'البلازا نيويورك',
-    city: 'نيويورك',
-    country: 'أمريكا',
-    image: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=800&h=500&fit=crop&q=80',
-    description: 'فندق أيقوني قبالة سنترال بارك.'
-  },
-  {
-    name: 'ريتز نيويورك',
-    city: 'نيويورك',
-    country: 'أمريكا',
-    image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&h=500&fit=crop&q=80',
-    description: 'فندق فاخر في قلب مانهاتن.'
-  },
-  {
-    name: 'وولفدورف أستوريا',
-    city: 'نيويورك',
-    country: 'أمريكا',
-    image: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&h=500&fit=crop&q=80',
-    description: 'رمز الفخامة الأمريكية بأسطورة تاريخية.'
-  },
-  {
-    name: 'فورسيزونز ميامي',
-    city: 'ميامي',
-    country: 'أمريكا',
-    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع على الشاطئ بطراز آرت ديكو مميز.'
-  },
-  {
-    name: 'ذا فاونتنبلو',
-    city: 'ميامي',
-    country: 'أمريكا',
-    image: 'https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع أسطوري على شاطئ ميامي.'
-  },
-  {
-    name: 'بيلماجيو لاس فيغاس',
-    city: 'لاس فيغاس',
-    country: 'أمريكا',
-    image: 'https://images.unsplash.com/photo-1605833556294-ea5c7a74f57d?w=800&h=500&fit=crop&q=80',
-    description: 'فندق شهير بنافورته الراقصة على الطراز الإيطالي.'
-  },
-  {
-    name: 'سيزارز لاس فيغاس',
-    city: 'لاس فيغاس',
-    country: 'أمريكا',
-    image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&h=500&fit=crop&q=80',
-    description: 'فندق ضخم على طراز الإمبراطورية الرومانية.'
-  },
-  {
-    name: 'شيكاغو ترمبل',
-    city: 'شيكاغو',
-    country: 'أمريكا',
-    image: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=800&h=500&fit=crop&q=80',
-    description: 'فندق فاخر بإطلالات على بحيرة ميشيغان.'
-  },
-  {
-    name: 'ديزني وورلد أورلاندو',
-    city: 'أورلاندو',
-    country: 'أمريكا',
-    image: 'https://images.unsplash.com/photo-1575505586569-646b2ca898fc?w=800&h=500&fit=crop&q=80',
-    description: 'تجربة سحرية للعائلات داخل عالم ديزني.'
-  },
-  {
-    name: 'بيفرلي هيلز',
-    city: 'لوس أنجلوس',
-    country: 'أمريكا',
-    image: 'https://images.unsplash.com/photo-1534430480872-3498386e7856?w=800&h=500&fit=crop&q=80',
-    description: 'فندق فاخر في قلب هوليوود.'
-  },
-  {
-    name: 'فورسيزونز تورنتو',
-    city: 'تورونتو',
-    country: 'كندا',
-    image: 'https://images.unsplash.com/photo-1517090504332-94f1c2e7de81?w=800&h=500&fit=crop&q=80',
-    description: 'فندق أنيق في أطول برج سكني بكندا.'
-  },
-  {
-    name: 'ريديسون فانكوفر',
-    city: 'فانكوفر',
-    country: 'كندا',
-    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=500&fit=crop&q=80',
-    description: 'فندق مريح قريب من وسط فانكوفر.'
-  },
-  {
-    name: 'ريتز كارلتون كانكون',
-    city: 'كانكون',
-    country: 'المكسيك',
-    image: 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع فاخر على شواطئ الكاريبي.'
-  },
-  {
-    name: 'كوباكابانا ريو',
-    city: 'ريو دي جانيرو',
-    country: 'البرازيل',
-    image: 'https://images.unsplash.com/photo-1516306580123-e6e52b1b7b5f?w=800&h=500&fit=crop&q=80',
-    description: 'فندق أيقوني على شاطئ كوباكابانا الشهير.'
-  },
-  {
-    name: 'فاسانو ساو باولو',
-    city: 'ساو باولو',
-    country: 'البرازيل',
-    image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&h=500&fit=crop&q=80',
-    description: 'فندق راقٍ في حي جاردينز الفاخر.'
-  },
-  {
-    name: 'بوركوريو باينوس',
-    city: 'بوينس آيرس',
-    country: 'الأرجنتين',
-    image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&h=500&fit=crop&q=80',
-    description: 'فندق فاخر بأسلوب أوروبي في العاصمة الأرجنتينية.'
-  },
-
-  // --- آسيا والمحيط الهادئ ---
-  {
-    name: 'سيام بانكوك',
-    city: 'بانكوك',
-    country: 'تايلاند',
-    image: 'https://images.unsplash.com/photo-1528181304800-259b08848526?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع فاخر وسط الطبيعة بمسابح لا متناهية.'
-  },
-  {
-    name: 'ماندارين بانكوك',
-    city: 'بانكوك',
-    country: 'تايلاند',
-    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=500&fit=crop&q=80',
-    description: 'فندق أسطوري على ضفاف نهر تشاو فرايا.'
-  },
-  {
-    name: 'أمانبوري فوكيت',
-    city: 'فوكيت',
-    country: 'تايلاند',
-    image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع فاخر على تلال بانسا ويطل على خليج أندامان.'
-  },
-  {
-    name: 'أمانجاني فوكيت',
-    city: 'فوكيت',
-    country: 'تايلاند',
-    image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع هادئ بإطلالات استوائية خلابة.'
-  },
-  {
-    name: 'ماندارين كوالالمبور',
-    city: 'كوالالمبور',
-    country: 'ماليزيا',
-    image: 'https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=800&h=500&fit=crop&q=80',
-    description: 'فندق فاخر قرب برجي بتروناس.'
-  },
-  {
-    name: 'الرانتاو لانكاوي',
-    city: 'لانكاوي',
-    country: 'ماليزيا',
-    image: 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع على شاطئ جزيرة لانكاوي.'
-  },
-  {
-    name: 'مارينا باي ساندز',
-    city: 'سنغافورة',
-    country: 'سنغافورة',
-    image: 'https://images.unsplash.com/photo-1574227492706-f65b24c3688a?w=800&h=500&fit=crop&q=80',
-    description: 'فندق أيقوني بمسبحه الشهير فوق البحر.'
-  },
-  {
-    name: 'رافلز سنغافورة',
-    city: 'سنغافورة',
-    country: 'سنغافورة',
-    image: 'https://images.unsplash.com/photo-1514192858121-201a7ab1c06e?w=800&h=500&fit=crop&q=80',
-    description: 'فندق تاريخي أسطوري بعمارة استعمارية أنيقة.'
-  },
-  {
-    name: 'أمان بالي',
-    city: 'باليم',
-    country: 'إندونيسيا',
-    image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع راقٍ وسط حقول الأرز في أوبود.'
-  },
-  {
-    name: 'أمانجاي بالي',
-    city: 'أوبود',
-    country: 'إندونيسيا',
-    image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع فاخر بإطلالات على نهر أيونغ.'
-  },
-  {
-    name: 'هانوي لوتيه',
-    city: 'هانوي',
-    country: 'فيتنام',
-    image: 'https://images.unsplash.com/photo-1528181304800-259b08848526?w=800&h=500&fit=crop&q=80',
-    description: 'فندق تاريخي فاخر في قلب هانوي.'
-  },
-  {
-    name: 'تاج محل مومباي',
-    city: 'مومباي',
-    country: 'الهند',
-    image: 'https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=800&h=500&fit=crop&q=80',
-    description: 'فندق أسطوري أيقوني في مومباي.'
-  },
-  {
-    name: 'أوبروي نيودلهي',
-    city: 'نيودلهي',
-    country: 'الهند',
-    image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&h=500&fit=crop&q=80',
-    description: 'فندق فاخر بحدائق ساحرة في العاصمة الهندية.'
-  },
-  {
-    name: 'بانغالور ويستين',
-    city: 'بنغالور',
-    country: 'الهند',
-    image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&h=500&fit=crop&q=80',
-    description: 'فندق عصري لرجال الأعمال في مدينة التقنية.'
-  },
-  {
-    name: 'بيرج شانغهاي',
-    city: 'شانغهاي',
-    country: 'الصين',
-    image: 'https://images.unsplash.com/photo-1545893835-abaa50cbe628?w=800&h=500&fit=crop&q=80',
-    description: 'فندق فاخر بإطلالات على بوند شانغهاي.'
-  },
-  {
-    name: 'الوايت بيجين',
-    city: 'بكين',
-    country: 'الصين',
-    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=500&fit=crop&q=80',
-    description: 'فندق راقٍ قريب من المدينة المحرمة.'
-  },
-  {
-    name: 'بارك حياة طوكيو',
-    city: 'طوكيو',
-    country: 'اليابان',
-    image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&h=500&fit=crop&q=80',
-    description: 'فندق فاخر بإطلالات على حديقة شينجوكو.'
-  },
-  {
-    name: 'ريتز كارلتون كيوتو',
-    city: 'كيوتو',
-    country: 'اليابان',
-    image: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&h=500&fit=crop&q=80',
-    description: 'فندق ياباني تقليدي فاخر بأجواء الزن.'
-  },
-  {
-    name: 'فورسيزونز سيول',
-    city: 'سيول',
-    country: 'كوريا',
-    image: 'https://images.unsplash.com/photo-1534274988757-a28bf1a57c17?w=800&h=500&fit=crop&q=80',
-    description: 'فندق فاخر في منطقة جانغنام.'
-  },
-  {
-    name: 'شيلا سيول',
-    city: 'سيول',
-    country: 'كوريا',
-    image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&h=500&fit=crop&q=80',
-    description: 'فندق أيقوني بإطلالات على قلعة نامسان.'
-  },
-  {
-    name: 'جونغهام المالديف',
-    city: 'ماليه',
-    country: 'المالديف',
-    image: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع فاخر على الماء بفيلات خاصة.'
-  },
-  {
-    name: 'المالديف ريجنت',
-    city: 'ماليه',
-    country: 'المالديف',
-    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع على جزيرة خاصة بشواطئ بكر.'
-  },
-  {
-    name: 'كنزارا سريلانكا',
-    city: 'كولومبو',
-    country: 'سريلانكا',
-    image: 'https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=800&h=500&fit=crop&q=80',
-    description: 'منتجع فاخر بإطلالات على المحيط الهندي.'
-  },
-  {
-    name: 'سيدني أوبرا',
-    city: 'سيدني',
-    country: 'أستراليا',
-    image: 'https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=800&h=500&fit=crop&q=80',
-    description: 'فندق أنيق بإطلالات على ميناء سيدني.'
-  },
-  {
-    name: 'هيلتون سيدني',
-    city: 'سيدني',
-    country: 'أستراليا',
-    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=500&fit=crop&q=80',
-    description: 'فندق مركزي قريب من دار الأوبرا.'
-  },
-  {
-    name: 'كراون ميلبورن',
-    city: 'ملبورن',
-    country: 'أستراليا',
-    image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&h=500&fit=crop&q=80',
-    description: 'فندق فاخر على ضفاف نهر يارا.'
-  },
-  {
-    name: 'أوكلاند هيلتون',
-    city: 'أوكلاند',
-    country: 'نيوزيلندا',
-    image: 'https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=800&h=500&fit=crop&q=80',
-    description: 'فندق عصري بإطلالات على المرفأ.'
+    name: 'فندق وشقق موڤنبيك بر دبي
+5 عدد النجوم',
+    city: 'دبي',
+    country: 'الإمارات',
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/partner-images/43/86/bbcad43ec68e5a7c12274a9354a5dd41fc3cb34c85e0de5322cb14d78fe0.jpeg',
+    description: 'إقامة مميزة في دبي - 8.9 - ممتاز (21,280 من النقاط).'
+  },
+  {
+    name: 'أوركيد فو
+4 عدد النجوم',
+    city: 'دبي',
+    country: 'الإمارات',
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/hotelier-images/98/b5/9fd98d4f1c28551b3ed7d50064f9b480af75db1866f5b5d6ea334c8e6e9b.jpeg',
+    description: 'إقامة مميزة في دبي - 7.5 - جيد (3,585 من النقاط).'
+  },
+  {
+    name: 'Embassy Suites By Hilton Dubai Business Bay
+5 عدد النجوم',
+    city: 'دبي',
+    country: 'الإمارات',
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/partner-images/97/5a/49c0737747ff8ab7fd44953f812bf206626dbdc2a327ade6458cfc1c3b39.jpeg',
+    description: 'إقامة مميزة في دبي - 9.6 - ممتاز (2,394 من النقاط).'
+  },
+  {
+    name: 'Swissotel Al Ghurair
+5 عدد النجوم',
+    city: 'دبي',
+    country: 'الإمارات',
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/partner-images/0f/2a/3a70ceb21b83c954936980173042323d9f6d1c0d1b356dc8f1a4b071c160.jpeg',
+    description: 'إقامة مميزة في دبي - 9.0 - ممتاز (27,263 من النقاط).'
+  },
+  {
+    name: 'فندق ملينيوم المطار دبي
+4 عدد النجوم',
+    city: 'دبي',
+    country: 'الإمارات',
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/partner-images/47/eb/1c87404fae358f4a591d24f64dc8b17ba1713d709838f3c18ba043a7ad33.jpeg',
+    description: 'إقامة مميزة في دبي - 8.8 - ممتاز (32,100 من النقاط).'
+  },
+  {
+    name: 'The Heritage Hotel, Autograph Collection
+4 عدد النجوم',
+    city: 'دبي',
+    country: 'الإمارات',
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/partner-images/a2/e7/df8d4f9cf859d2957b4be0768ec7fbbc858485aeb731b2f7aff056e8e372.jpeg',
+    description: 'إقامة مميزة في دبي - 9.2 - ممتاز (15,216 من النقاط).'
+  },
+  {
+    name: 'Four Points by Sheraton Sheikh Zayed Road, Dubai
+4 عدد النجوم',
+    city: 'دبي',
+    country: 'الإمارات',
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/hotelier-images/2d/90/0f2addd04d11ab404a502f5e8c202f3ed3bd93aa20d507b9f24ca565b485.jpeg',
+    description: 'إقامة مميزة في دبي - 8.9 - ممتاز (13,450 من النقاط).'
+  },
+  {
+    name: 'فندق جراند اكسلسيور البرشاء
+4 عدد النجوم',
+    city: 'دبي',
+    country: 'الإمارات',
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/partner-images/84/0a/931c1e9d2df7d51e9e6969b86d85f2ccae50d433624a330cfc6792bd889d.jpeg',
+    description: 'إقامة مميزة في دبي - 7.8 - جيد (14,061 من النقاط).'
+  },
+  {
+    name: 'أفينيو هوتل
+4 عدد النجوم',
+    city: 'دبي',
+    country: 'الإمارات',
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/partner-images/a3/a4/2bfe160f76692dd27e89b7404eaa246bdbf12f07c4d4f62f63b19a7731ca.jpeg',
+    description: 'إقامة مميزة في دبي - 7.9 - جيد (6,463 من النقاط).'
+  },
+  {
+    name: 'فندق جراند إكسلسيور بر دبي
+4 عدد النجوم',
+    city: 'دبي',
+    country: 'الإمارات',
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/partner-images/f0/93/844cc0862568388cb6996dcdec572e052bc59dc5e4b276989d5043f21a3f.jpeg',
+    description: 'إقامة مميزة في دبي - 7.9 - جيد (17,361 من النقاط).'
+  },
+  {
+    name: 'Jumeirah Living World Trade Centre Dubai
+5 عدد النجوم',
+    city: 'دبي',
+    country: 'الإمارات',
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/hotelier-images/66/17/0feaf7abf8e1b85312a6e6187f58ff8cc2f7c5c41627b70b216aa19c5814.jpeg',
+    description: 'إقامة مميزة في دبي - 9.0 - ممتاز (1,800 من النقاط).'
+  },
+  {
+    name: 'Marriott Resort Palm Jumeirah, Dubai
+5 عدد النجوم',
+    city: 'دبي',
+    country: 'الإمارات',
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/partner-images/56/23/c3f9e3247b7e0fb4f878c6dc3e8f2f57547b1b32774ba5ec47ecd75a2a92.jpeg',
+    description: 'إقامة مميزة في دبي - 9.2 - ممتاز (6,621 من النقاط).'
+  },
+  {
+    name: 'فندق دبليو دبي - النخلة
+5 عدد النجوم',
+    city: 'دبي',
+    country: 'الإمارات',
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/hotelier-images/78/65/c0c260de61d1fdd40b36c52823d4233c5823147693680765591445910781.jpeg',
+    description: 'إقامة مميزة في دبي - 9.1 - ممتاز (11,664 من النقاط).'
+  },
+  {
+    name: 'ibis Dubai Al Rigga
+3 عدد النجوم',
+    city: 'دبي',
+    country: 'الإمارات',
+    image: 'https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_500,q_80,w_800/hotelier-images/f0/88/6dc88d5335e2eb11a5fb29455b2b62032975cdf84c32eab1e77cbb244a4f.jpeg',
+    description: 'إقامة مميزة في دبي - 8.9 - ممتاز (34,739 من النقاط).'
   }
 ];
 
