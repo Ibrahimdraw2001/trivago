@@ -2,6 +2,7 @@ const path = require('path');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const { HOTELS } = require('./hotels-data');
+const { nowLocal } = require('./helpers/time');
 
 const CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 function generateRefCode() {
@@ -315,10 +316,11 @@ async function init() {
   const existingHotels = await all('SELECT id, name FROM hotels');
   const existingNames = new Set(existingHotels.map((h) => h.name));
 
+  const ts = nowLocal();
   for (const h of HOTELS) {
     if (!existingNames.has(h.name)) {
-      await run('INSERT INTO hotels (name, city, country, image, description) VALUES (?, ?, ?, ?, ?)',
-        [h.name, h.city, h.country, h.image || '', h.description]);
+      await run('INSERT INTO hotels (name, city, country, image, description, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+        [h.name, h.city, h.country, h.image || '', h.description, ts]);
     } else {
       await run('UPDATE hotels SET city = ?, country = ?, image = ?, description = ? WHERE name = ?',
         [h.city, h.country, h.image || '', h.description, h.name]);
