@@ -2,6 +2,23 @@ const router = require('express').Router();
 const { get, all } = require('../db');
 const { authUser } = require('../middleware/auth');
 
+function todayStr() {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function daysAgoStr(n) {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 router.get('/', authUser, async (req, res) => {
   const user = await get(
     `SELECT u.*, l.name as level_name, l.daily_videos, l.reward_per_video
@@ -15,9 +32,12 @@ router.get('/', authUser, async (req, res) => {
   const totalWithdrawals = await get("SELECT COALESCE(SUM(amount),0) as sum FROM withdrawals WHERE user_id = ? AND status = 'approved'", [req.user.id]);
   const referralCount = await get("SELECT COUNT(*) as count FROM referrals WHERE inviter_id = ? AND status = 'completed'", [req.user.id]);
   const referralEarnings = await get("SELECT COALESCE(SUM(inviter_reward),0) as sum FROM referrals WHERE inviter_id = ? AND status = 'completed'", [req.user.id]);
+  const today = todayStr();
+  const weekAgo = daysAgoStr(7);
+
   const todayRatings = await get(
-    "SELECT COUNT(*) as count FROM ratings WHERE user_id = ? AND date(created_at) = date('now')",
-    [req.user.id]
+    "SELECT COUNT(*) as count FROM ratings WHERE user_id = ? AND date(created_at) = ?",
+    [req.user.id, today]
   );
   const uniqueHotelsRated = await get('SELECT COUNT(DISTINCT hotel_id) as count FROM ratings WHERE user_id = ?', [req.user.id]);
 
@@ -30,9 +50,9 @@ router.get('/', authUser, async (req, res) => {
 
   const weeklyEarnings = await all(
     `SELECT date(created_at) as day, SUM(amount) as total
-     FROM transactions WHERE user_id = ? AND type = 'reward' AND created_at >= date('now', '-7 days')
+     FROM transactions WHERE user_id = ? AND type = 'reward' AND created_at >= ?
      GROUP BY date(created_at) ORDER BY day`,
-    [req.user.id]
+    [req.user.id, weekAgo]
   );
 
   res.json({

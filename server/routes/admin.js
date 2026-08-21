@@ -4,6 +4,25 @@ const { run, get, all } = require('../db');
 const { authUser, authAdmin } = require('../middleware/auth');
 const { logActivity } = require('../helpers/activity');
 
+function todayStr() {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function nowStr() {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  const seconds = String(d.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
 router.use(authUser, authAdmin);
 
 router.get('/stats', async (req, res) => {
@@ -73,7 +92,7 @@ router.put('/users/:id', async (req, res) => {
         const level = await get('SELECT id FROM levels WHERE id = ?', [levelId]);
         if (level) {
           await run('UPDATE users SET level_id = ?, level_date = ?, level_purchased_at = ? WHERE id = ?',
-            [Number(levelId), new Date().toISOString().slice(0, 10), new Date().toISOString().slice(0, 19).replace('T', ' '), user.id]);
+            [Number(levelId), todayStr(), nowStr(), user.id]);
         }
       }
     }
