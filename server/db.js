@@ -297,15 +297,24 @@ async function init() {
     await run("ALTER TABLE hotels ADD COLUMN country TEXT NOT NULL DEFAULT ''");
   }
 
-  const hotelsVersion = await get('SELECT value FROM settings WHERE key = ?', ['hotels_version']);
-  if (!hotelsVersion || hotelsVersion.value !== '6') {
-    await run('DELETE FROM hotels');
-    for (const h of HOTELS) {
+  const existingHotels = await all('SELECT id, name FROM hotels');
+  const existingNames = new Set(existingHotels.map((h) => h.name));
+  const codeNames = new Set(HOTELS.map((h) => h.name));
+
+  for (const h of HOTELS) {
+    if (!existingNames.has(h.name)) {
       await run('INSERT INTO hotels (name, city, country, image, description) VALUES (?, ?, ?, ?, ?)',
         [h.name, h.city, h.country, h.image || '', h.description]);
+    } else {
+      await run('UPDATE hotels SET city = ?, country = ?, image = ?, description = ? WHERE name = ?',
+        [h.city, h.country, h.image || '', h.description, h.name]);
     }
-    await run("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = ?",
-      ['hotels_version', '6', '6']);
+  }
+
+  for (const existing of existingHotels) {
+    if (!codeNames.has(existing.name)) {
+      await run('DELETE FROM hotels WHERE id = ?', [existing.id]);
+    }
   }
 }
 
