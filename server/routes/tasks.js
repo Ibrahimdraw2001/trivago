@@ -3,16 +3,9 @@ const { run, get, all, tx } = require('../db');
 const { authUser } = require('../middleware/auth');
 const { logActivity } = require('../helpers/activity');
 const { getCached, setCache } = require('../helpers/cache');
+const { todayLocal } = require('../helpers/time');
 
 const HOTELS_CACHE_TTL = 60 * 1000;
-
-function todayStr() {
-  const d = new Date();
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
 
 router.get('/cities', authUser, async (req, res) => {
   const cacheKey = 'hotel_cities';
@@ -35,7 +28,7 @@ router.get('/', authUser, async (req, res) => {
     return res.json({ code: 0, data: { hasLevel: false, hotels: [], ratedCount: 0, dailyLimit: 0 } });
   }
 
-  const today = todayStr();
+  const today = todayLocal();
   const levelPurchasedToday = user.level_date === today;
 
   const allRatedToday = await all(
@@ -104,7 +97,7 @@ router.post('/rate', authUser, async (req, res) => {
         throw Object.assign(new Error('الفندق غير موجود'), { status: 404 });
       }
 
-      const today = todayStr();
+      const today = todayLocal();
       const levelPurchasedToday = user.level_date === today;
 
       try {

@@ -2,25 +2,7 @@ const router = require('express').Router();
 const { run, get, all, tx } = require('../db');
 const { authUser } = require('../middleware/auth');
 const { logActivity } = require('../helpers/activity');
-
-function todayStr() {
-  const d = new Date();
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-function nowStr() {
-  const d = new Date();
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  const hours = String(d.getHours()).padStart(2, '0');
-  const minutes = String(d.getMinutes()).padStart(2, '0');
-  const seconds = String(d.getSeconds()).padStart(2, '0');
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-}
+const { todayLocal, nowLocal } = require('../helpers/time');
 
 const REFERRAL_REWARDS = {
   30: { inviter: 5, invitee: 2 },
@@ -54,7 +36,7 @@ router.post('/purchase', authUser, async (req, res) => {
 
       const updateResult = await run(
         'UPDATE users SET balance = balance - ?, level_id = ?, level_date = ?, level_purchased_at = ? WHERE id = ? AND balance >= ?',
-        [level.price, level.id, todayStr(), nowStr(), user.id, level.price]
+        [level.price, level.id, todayLocal(), nowLocal(), user.id, level.price]
       );
       if (updateResult.changes === 0) {
         throw Object.assign(new Error('الرصيد غير كافٍ لشراء هذا المستوى'), { status: 400 });
@@ -73,8 +55,8 @@ router.post('/purchase', authUser, async (req, res) => {
           const rewards = REFERRAL_REWARDS[level.price] || { inviter: 5, invitee: 2 };
 
           await run(
-            "UPDATE referrals SET status = 'completed', inviter_reward = ?, invitee_reward = ?, completed_at = datetime('now') WHERE id = ?",
-            [rewards.inviter, rewards.invitee, referral.id]
+            "UPDATE referrals SET status = 'completed', inviter_reward = ?, invitee_reward = ?, completed_at = ? WHERE id = ?",
+            [rewards.inviter, rewards.invitee, nowLocal(), referral.id]
           );
 
           await run('UPDATE users SET balance = balance + ? WHERE id = ?', [rewards.inviter, user.referred_by]);

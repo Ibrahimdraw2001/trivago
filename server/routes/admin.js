@@ -3,25 +3,7 @@ const bcrypt = require('bcryptjs');
 const { run, get, all } = require('../db');
 const { authUser, authAdmin } = require('../middleware/auth');
 const { logActivity } = require('../helpers/activity');
-
-function todayStr() {
-  const d = new Date();
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-function nowStr() {
-  const d = new Date();
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  const hours = String(d.getHours()).padStart(2, '0');
-  const minutes = String(d.getMinutes()).padStart(2, '0');
-  const seconds = String(d.getSeconds()).padStart(2, '0');
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-}
+const { todayLocal, nowLocal } = require('../helpers/time');
 
 router.use(authUser, authAdmin);
 
@@ -92,7 +74,7 @@ router.put('/users/:id', async (req, res) => {
         const level = await get('SELECT id FROM levels WHERE id = ?', [levelId]);
         if (level) {
           await run('UPDATE users SET level_id = ?, level_date = ?, level_purchased_at = ? WHERE id = ?',
-            [Number(levelId), todayStr(), nowStr(), user.id]);
+            [Number(levelId), todayLocal(), nowLocal(), user.id]);
         }
       }
     }
@@ -124,8 +106,8 @@ router.get('/deposits', async (req, res) => {
 router.post('/deposits/:id/approve', async (req, res) => {
   try {
     const result = await run(
-      "UPDATE deposits SET status = 'approved', processed_at = datetime('now'), admin_id = ? WHERE id = ? AND status = 'pending'",
-      [req.user.id, req.params.id]
+      "UPDATE deposits SET status = 'approved', processed_at = ?, admin_id = ? WHERE id = ? AND status = 'pending'",
+      [nowLocal(), req.user.id, req.params.id]
     );
     if (result.changes === 0) {
       return res.status(400).json({ code: 400, message: 'تمت معالجة هذا الطلب مسبقاً' });
@@ -145,8 +127,8 @@ router.post('/deposits/:id/approve', async (req, res) => {
 router.post('/deposits/:id/reject', async (req, res) => {
   try {
     const result = await run(
-      "UPDATE deposits SET status = 'rejected', processed_at = datetime('now'), admin_id = ? WHERE id = ? AND status = 'pending'",
-      [req.user.id, req.params.id]
+      "UPDATE deposits SET status = 'rejected', processed_at = ?, admin_id = ? WHERE id = ? AND status = 'pending'",
+      [nowLocal(), req.user.id, req.params.id]
     );
     if (result.changes === 0) {
       return res.status(400).json({ code: 400, message: 'تمت معالجة هذا الطلب مسبقاً أو غير موجود' });
@@ -173,8 +155,8 @@ router.get('/withdrawals', async (req, res) => {
 router.post('/withdrawals/:id/approve', async (req, res) => {
   try {
     const result = await run(
-      "UPDATE withdrawals SET status = 'approved', processed_at = datetime('now'), admin_id = ? WHERE id = ? AND status = 'pending'",
-      [req.user.id, req.params.id]
+      "UPDATE withdrawals SET status = 'approved', processed_at = ?, admin_id = ? WHERE id = ? AND status = 'pending'",
+      [nowLocal(), req.user.id, req.params.id]
     );
     if (result.changes === 0) {
       return res.status(400).json({ code: 400, message: 'تمت معالجة هذا الطلب مسبقاً أو غير موجود' });
@@ -193,8 +175,8 @@ router.post('/withdrawals/:id/reject', async (req, res) => {
     if (withdrawal.status !== 'pending') return res.status(400).json({ code: 400, message: 'تمت معالجة هذا الطلب مسبقاً' });
 
     const result = await run(
-      "UPDATE withdrawals SET status = 'rejected', processed_at = datetime('now'), admin_id = ? WHERE id = ? AND status = 'pending'",
-      [req.user.id, req.params.id]
+      "UPDATE withdrawals SET status = 'rejected', processed_at = ?, admin_id = ? WHERE id = ? AND status = 'pending'",
+      [nowLocal(), req.user.id, req.params.id]
     );
     if (result.changes === 0) {
       return res.status(400).json({ code: 400, message: 'تمت معالجة هذا الطلب مسبقاً' });
