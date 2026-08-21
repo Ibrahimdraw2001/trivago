@@ -15,9 +15,4 @@ function daysAgoLocal(n) {
   return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 }
 
-function minutesAgoISO(n) {
-  const d = new Date(Date.now() - n * 60000);
-  return d.toISOString();
-}
-
-module.exports = { nowLocal, todayLocal, daysAgoLocal, minutesAgoISO };
+module.exports = { nowLocal, todayLocal, daysAgoLocal };

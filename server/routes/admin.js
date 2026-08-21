@@ -4,6 +4,9 @@ const { run, get, all } = require('../db');
 const { authUser, authAdmin } = require('../middleware/auth');
 const { logActivity } = require('../helpers/activity');
 const { todayLocal, nowLocal } = require('../helpers/time');
+const { round2 } = require('../db');
+
+const BEP20_RE = /^0x[0-9a-fA-F]{40}$/;
 
 router.use(authUser, authAdmin);
 
@@ -50,6 +53,9 @@ router.put('/users/:id', async (req, res) => {
     if (!user) return res.status(404).json({ code: 404, message: 'المستخدم غير موجود' });
     if (user.role === 'admin') return res.status(400).json({ code: 400, message: 'لا يمكن تعديل حساب الأدمن' });
 
+    const ts = nowLocal();
+    const today = todayLocal();
+
     if (username !== undefined && username !== null && username !== user.username) {
       username = String(username).trim().slice(0, 30);
       if (!username) return res.status(400).json({ code: 400, message: 'اسم المستخدم لا يمكن أن يكون فارغاً' });
@@ -60,10 +66,10 @@ router.put('/users/:id', async (req, res) => {
     }
 
     if (balance !== undefined && balance !== null && Number(balance) >= 0 && Number(balance) !== user.balance) {
-      const newBalance = Number(balance);
+      const newBalance = round2(Number(balance));
       await run('UPDATE users SET balance = ? WHERE id = ?', [newBalance, user.id]);
-      await run('INSERT INTO transactions (user_id, type, amount, balance_after, description) VALUES (?, ?, ?, ?, ?)',
-        [user.id, 'admin_adjust', newBalance - user.balance, newBalance, 'تعديل رصيد من قبل الأدمن']);
+      await run('INSERT INTO transactions (user_id, type, amount, balance_after, description, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+        [user.id, 'admin_adjust', newBalance - user.balance, newBalance, 'تعديل رصيد من قبل الأدمن', ts]);
     }
 
     if (levelId !== undefined && Number(levelId) !== (user.level_id || 0)) {
@@ -74,7 +80,7 @@ router.put('/users/:id', async (req, res) => {
         const level = await get('SELECT id FROM levels WHERE id = ?', [levelId]);
         if (level) {
           await run('UPDATE users SET level_id = ?, level_date = ?, level_purchased_at = ? WHERE id = ?',
-            [Number(levelId), todayLocal(), nowLocal(), user.id]);
+            [Number(levelId), today, ts, user.id]);
         }
       }
     }
@@ -105,18 +111,22 @@ router.get('/deposits', async (req, res) => {
 
 router.post('/deposits/:id/approve', async (req, res) => {
   try {
-    const result = await run(
-      "UPDATE deposits SET status = 'approved', processed_at = ?, admin_id = ? WHERE id = ? AND status = 'pending'",
-      [nowLocal(), req.user.id, req.params.id]
-    );
-    if (result.changes === 0) {
+    const ts = nowLocal();
+    const deposit = await get('SELECT * FROM deposits WHERE id = ? AND status = ?', [req.params.id, 'pending']);
+    if (!deposit) {
       return res.status(400).json({ code: 400, message: 'تمت معالجة هذا الطلب مسبقاً' });
     }
-    const deposit = await get('SELECT user_id, amount FROM deposits WHERE id = ?', [req.params.id]);
+
+    await run(
+      "UPDATE deposits SET status = 'approved', processed_at = ?, admin_id = ? WHERE id = ?",
+      [ts, req.user.id, deposit.id]
+    );
     await run('UPDATE users SET balance = balance + ? WHERE id = ?', [deposit.amount, deposit.user_id]);
     const user = await get('SELECT balance FROM users WHERE id = ?', [deposit.user_id]);
-    await run('INSERT INTO transactions (user_id, type, amount, balance_after, description) VALUES (?, ?, ?, ?, ?)',
-      [deposit.user_id, 'deposit', deposit.amount, user.balance, 'إيداع عبر USDT']);
+    const newBalance = round2(user.balance);
+    await run('UPDATE users SET balance = ? WHERE id = ?', [newBalance, deposit.user_id]);
+    await run('INSERT INTO transactions (user_id, type, amount, balance_after, description, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+      [deposit.user_id, 'deposit', deposit.amount, newBalance, 'إيداع عبر USDT', ts]);
     logActivity(deposit.user_id, 'deposit_approved', `إيداع $${deposit.amount} تمت الموافقة عليه`);
     res.json({ code: 0, message: 'تمت الموافقة على الإيداع وإضافة الرصيد' });
   } catch (err) {
@@ -126,9 +136,10 @@ router.post('/deposits/:id/approve', async (req, res) => {
 
 router.post('/deposits/:id/reject', async (req, res) => {
   try {
+    const ts = nowLocal();
     const result = await run(
       "UPDATE deposits SET status = 'rejected', processed_at = ?, admin_id = ? WHERE id = ? AND status = 'pending'",
-      [nowLocal(), req.user.id, req.params.id]
+      [ts, req.user.id, req.params.id]
     );
     if (result.changes === 0) {
       return res.status(400).json({ code: 400, message: 'تمت معالجة هذا الطلب مسبقاً أو غير موجود' });
@@ -154,14 +165,17 @@ router.get('/withdrawals', async (req, res) => {
 
 router.post('/withdrawals/:id/approve', async (req, res) => {
   try {
-    const result = await run(
-      "UPDATE withdrawals SET status = 'approved', processed_at = ?, admin_id = ? WHERE id = ? AND status = 'pending'",
-      [nowLocal(), req.user.id, req.params.id]
-    );
-    if (result.changes === 0) {
+    const ts = nowLocal();
+    const withdrawal = await get('SELECT * FROM withdrawals WHERE id = ? AND status = ?', [req.params.id, 'pending']);
+    if (!withdrawal) {
       return res.status(400).json({ code: 400, message: 'تمت معالجة هذا الطلب مسبقاً أو غير موجود' });
     }
-    logActivity((await get('SELECT user_id FROM withdrawals WHERE id = ?', [req.params.id])).user_id, 'withdrawal_approved', `سحب تمت الموافقة عليه`);
+
+    await run(
+      "UPDATE withdrawals SET status = 'approved', processed_at = ?, admin_id = ? WHERE id = ?",
+      [ts, req.user.id, withdrawal.id]
+    );
+    logActivity(withdrawal.user_id, 'withdrawal_approved', `سحب تمت الموافقة عليه`);
     res.json({ code: 0, message: 'تم تحويل المبلغ عبر USDT والموافقة على السحب' });
   } catch (err) {
     res.status(500).json({ code: 500, message: 'حدث خطأ في الموافقة على السحب' });
@@ -170,13 +184,14 @@ router.post('/withdrawals/:id/approve', async (req, res) => {
 
 router.post('/withdrawals/:id/reject', async (req, res) => {
   try {
+    const ts = nowLocal();
     const withdrawal = await get('SELECT * FROM withdrawals WHERE id = ?', [req.params.id]);
     if (!withdrawal) return res.status(404).json({ code: 404, message: 'الطلب غير موجود' });
     if (withdrawal.status !== 'pending') return res.status(400).json({ code: 400, message: 'تمت معالجة هذا الطلب مسبقاً' });
 
     const result = await run(
       "UPDATE withdrawals SET status = 'rejected', processed_at = ?, admin_id = ? WHERE id = ? AND status = 'pending'",
-      [nowLocal(), req.user.id, req.params.id]
+      [ts, req.user.id, req.params.id]
     );
     if (result.changes === 0) {
       return res.status(400).json({ code: 400, message: 'تمت معالجة هذا الطلب مسبقاً' });
@@ -184,8 +199,10 @@ router.post('/withdrawals/:id/reject', async (req, res) => {
 
     await run('UPDATE users SET balance = balance + ? WHERE id = ?', [withdrawal.amount, withdrawal.user_id]);
     const user = await get('SELECT balance FROM users WHERE id = ?', [withdrawal.user_id]);
-    await run('INSERT INTO transactions (user_id, type, amount, balance_after, description) VALUES (?, ?, ?, ?, ?)',
-      [withdrawal.user_id, 'withdraw_refund', withdrawal.amount, user.balance, 'إرجاع مبلغ السحب المرفوض']);
+    const newBalance = round2(user.balance);
+    await run('UPDATE users SET balance = ? WHERE id = ?', [newBalance, withdrawal.user_id]);
+    await run('INSERT INTO transactions (user_id, type, amount, balance_after, description, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+      [withdrawal.user_id, 'withdraw_refund', withdrawal.amount, newBalance, 'إرجاع مبلغ السحب المرفوض', ts]);
 
     res.json({ code: 0, message: 'تم رفض السحب وإرجاع المبلغ للرصيد' });
   } catch (err) {
@@ -206,8 +223,8 @@ router.post('/hotels', async (req, res) => {
   image = String(image || '').trim().slice(0, 500);
   description = String(description || '').trim().slice(0, 1000);
   if (!name) return res.status(400).json({ code: 400, message: 'اسم الفندق مطلوب' });
-  const result = await run('INSERT INTO hotels (name, city, country, image, description) VALUES (?, ?, ?, ?, ?)',
-    [name, city, country, image, description]);
+  const result = await run('INSERT INTO hotels (name, city, country, image, description, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+    [name, city, country, image, description, nowLocal()]);
   res.json({ code: 0, data: { id: result.lastID }, message: 'تمت إضافة الفندق' });
 });
 
@@ -242,8 +259,8 @@ router.post('/levels', async (req, res) => {
   price = Number(price);
   dailyVideos = Number(dailyVideos);
   rewardPerVideo = Number(rewardPerVideo);
-  if (!name || !price || !dailyVideos || !rewardPerVideo) {
-    return res.status(400).json({ code: 400, message: 'جميع الحقول مطلوبة' });
+  if (!name || !Number.isFinite(price) || price <= 0 || !Number.isFinite(dailyVideos) || dailyVideos <= 0 || !Number.isFinite(rewardPerVideo) || rewardPerVideo <= 0) {
+    return res.status(400).json({ code: 400, message: 'جميع الحقول مطلوبة ويجب أن تكون أرقام موجبة' });
   }
   const result = await run('INSERT INTO levels (name, price, daily_videos, reward_per_video) VALUES (?, ?, ?, ?)',
     [name, price, dailyVideos, rewardPerVideo]);
@@ -256,6 +273,9 @@ router.put('/levels/:id', async (req, res) => {
   price = Number(price);
   dailyVideos = Number(dailyVideos);
   rewardPerVideo = Number(rewardPerVideo);
+  if (!name || !Number.isFinite(price) || price <= 0 || !Number.isFinite(dailyVideos) || dailyVideos <= 0 || !Number.isFinite(rewardPerVideo) || rewardPerVideo <= 0) {
+    return res.status(400).json({ code: 400, message: 'جميع الحقول مطلوبة ويجب أن تكون أرقام موجبة' });
+  }
   const level = await get('SELECT id FROM levels WHERE id = ?', [req.params.id]);
   if (!level) return res.status(404).json({ code: 404, message: 'المستوى غير موجود' });
   await run('UPDATE levels SET name = ?, price = ?, daily_videos = ?, reward_per_video = ? WHERE id = ?',
@@ -286,7 +306,7 @@ router.put('/password', async (req, res) => {
     newPassword = String(newPassword || '');
     const admin = await get('SELECT * FROM users WHERE id = ?', [req.user.id]);
     if (!admin) return res.status(404).json({ code: 404, message: 'المستخدم غير موجود' });
-    if (!bcrypt.compareSync(currentPassword, admin.password)) {
+    if (!await bcrypt.compare(currentPassword, admin.password)) {
       return res.status(400).json({ code: 400, message: 'كلمة المرور الحالية غير صحيحة' });
     }
     if (!newPassword || String(newPassword).length < 8) {
@@ -295,9 +315,21 @@ router.put('/password', async (req, res) => {
     if (!/(?=.*[A-Za-z])(?=.*\d)/.test(newPassword)) {
       return res.status(400).json({ code: 400, message: 'كلمة المرور يجب أن تحتوي على أحرف وأرقام' });
     }
-    const hash = bcrypt.hashSync(newPassword, 10);
+    const hash = await bcrypt.hash(newPassword, 10);
     await run('UPDATE users SET password = ?, token_version = token_version + 1 WHERE id = ?', [hash, admin.id]);
-    res.json({ code: 0, message: 'تم تغيير كلمة المرور بنجاح' });
+
+    const updatedAdmin = await get('SELECT * FROM users WHERE id = ?', [admin.id]);
+    const payload = { id: updatedAdmin.id, username: updatedAdmin.username, role: updatedAdmin.role, balance: updatedAdmin.balance, level_id: updatedAdmin.level_id, token_version: updatedAdmin.token_version };
+    const newToken = require('../middleware/auth').sign(payload);
+    res.cookie('token', newToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/',
+    });
+
+    res.json({ code: 0, data: { user: payload }, message: 'تم تغيير كلمة المرور بنجاح' });
   } catch (err) {
     res.status(500).json({ code: 500, message: 'حدث خطأ في تغيير كلمة المرور' });
   }
@@ -351,10 +383,11 @@ router.get('/export/:type', async (req, res) => {
 
     const csvEscape = (v) => {
       const s = String(v ?? '');
-      if (s.includes(',') || s.includes('"') || s.includes('\n')) {
-        return '"' + s.replace(/"/g, '""') + '"';
+      const safe = /^[=+\-@\t\r\n]/.test(s) ? "'" + s : s;
+      if (safe.includes(',') || safe.includes('"') || safe.includes('\n')) {
+        return '"' + safe.replace(/"/g, '""') + '"';
       }
-      return s;
+      return safe;
     };
 
     const csvRows = [headers.join(',')];

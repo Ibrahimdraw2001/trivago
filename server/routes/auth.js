@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const { run, get, generateRefCode } = require('../db');
 const { sign, authUser } = require('../middleware/auth');
 const { logActivity } = require('../helpers/activity');
+const { nowLocal } = require('../helpers/time');
 
 const PASSWORD_RE = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
 const MAX_REFERRALS = 15;
@@ -21,6 +22,19 @@ function setAuthCookie(res, token) {
   res.cookie('token', token, COOKIE_OPTIONS);
 }
 
+async function checkLockout(username, ip) {
+  try {
+    const lockKey = ip || username;
+    const locked = await get(
+      "SELECT COUNT(*) as count FROM login_attempts WHERE (username = ? OR ip = ?) AND success = 0 AND created_at > datetime('now', ?)",
+      [username, lockKey, `-${LOCKOUT_MINUTES} minutes`]
+    );
+    return locked && locked.count >= MAX_LOGIN_ATTEMPTS;
+  } catch (_) {
+    return false;
+  }
+}
+
 router.post('/register', async (req, res) => {
   try {
     let { username, password, referralCode } = req.body;
@@ -37,10 +51,6 @@ router.post('/register', async (req, res) => {
     }
     if (!PASSWORD_RE.test(password)) {
       return res.status(400).json({ code: 400, message: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل وتحتوي أحرفاً وأرقاماً فقط' });
-    }
-    const exists = await get('SELECT id FROM users WHERE username = ?', [username]);
-    if (exists) {
-      return res.status(400).json({ code: 400, message: 'اسم المستخدم مستخدم بالفعل' });
     }
 
     let inviterId = null;
@@ -63,16 +73,25 @@ router.post('/register', async (req, res) => {
       codeDup = await get('SELECT id FROM users WHERE referral_code = ?', [code]);
     } while (codeDup);
 
-    const hash = bcrypt.hashSync(password, 10);
-    const result = await run(
-      'INSERT INTO users (username, password, referral_code, referred_by) VALUES (?, ?, ?, ?)',
-      [username, hash, code, inviterId]
-    );
+    const hash = await bcrypt.hash(password, 10);
+    const ts = nowLocal();
+    let result;
+    try {
+      result = await run(
+        'INSERT INTO users (username, password, referral_code, referred_by, created_at) VALUES (?, ?, ?, ?, ?)',
+        [username, hash, code, inviterId, ts]
+      );
+    } catch (e) {
+      if (e.message && e.message.includes('UNIQUE')) {
+        return res.status(400).json({ code: 400, message: 'اسم المستخدم مستخدم بالفعل' });
+      }
+      throw e;
+    }
 
     if (inviterId) {
       await run(
-        'INSERT INTO referrals (inviter_id, invitee_id) VALUES (?, ?)',
-        [inviterId, result.lastID]
+        'INSERT INTO referrals (inviter_id, invitee_id, created_at) VALUES (?, ?, ?)',
+        [inviterId, result.lastID, ts]
       );
     }
 
@@ -96,22 +115,16 @@ router.post('/login', async (req, res) => {
     password = String(password);
     const ip = req.ip || req.connection?.remoteAddress || '';
 
-    let locked = { count: 0 };
-    try {
-      locked = await get(
-        "SELECT COUNT(*) as count FROM login_attempts WHERE username = ? AND success = 0 AND created_at > datetime('now', ?)",
-        [username, `-${LOCKOUT_MINUTES} minutes`]
-      );
-    } catch (_) {}
-    if (locked && locked.count >= MAX_LOGIN_ATTEMPTS) {
+    if (await checkLockout(username, ip)) {
       return res.status(429).json({ code: 429, message: `تم قفل الحساب لمدة ${LOCKOUT_MINUTES} دقيقة بسبب محاولات كثيرة` });
     }
 
     const user = await get('SELECT * FROM users WHERE username = ?', [username]);
-    const success = user && bcrypt.compareSync(password, user.password);
+    const success = user && await bcrypt.compare(password, user.password);
 
     try {
-      await run('INSERT INTO login_attempts (username, ip, success) VALUES (?, ?, ?)', [username, ip, success ? 1 : 0]);
+      await run('INSERT INTO login_attempts (username, ip, success, created_at) VALUES (?, ?, ?, ?)',
+        [username, ip, success ? 1 : 0, nowLocal()]);
     } catch (_) {}
 
     if (!user || !success) {
@@ -138,22 +151,16 @@ router.post('/admin-login', async (req, res) => {
     password = String(password);
     const ip = req.ip || req.connection?.remoteAddress || '';
 
-    let locked = { count: 0 };
-    try {
-      locked = await get(
-        "SELECT COUNT(*) as count FROM login_attempts WHERE username = ? AND success = 0 AND created_at > datetime('now', ?)",
-        [username, `-${LOCKOUT_MINUTES} minutes`]
-      );
-    } catch (_) {}
-    if (locked && locked.count >= MAX_LOGIN_ATTEMPTS) {
+    if (await checkLockout(username, ip)) {
       return res.status(429).json({ code: 429, message: `تم قفل الحساب لمدة ${LOCKOUT_MINUTES} دقيقة بسبب محاولات كثيرة` });
     }
 
     const user = await get('SELECT * FROM users WHERE username = ?', [username]);
-    const success = user && user.role === 'admin' && bcrypt.compareSync(password, user.password);
+    const success = user && user.role === 'admin' && await bcrypt.compare(password, user.password);
 
     try {
-      await run('INSERT INTO login_attempts (username, ip, success) VALUES (?, ?, ?)', [username, ip, success ? 1 : 0]);
+      await run('INSERT INTO login_attempts (username, ip, success, created_at) VALUES (?, ?, ?, ?)',
+        [username, ip, success ? 1 : 0, nowLocal()]);
     } catch (_) {}
 
     if (!user || !success || user.role !== 'admin') {
@@ -197,16 +204,22 @@ router.post('/change-password', authUser, async (req, res) => {
     newPassword = String(newPassword || '');
     const user = await get('SELECT * FROM users WHERE id = ?', [req.user.id]);
     if (!user) return res.status(404).json({ code: 404, message: 'المستخدم غير موجود' });
-    if (!bcrypt.compareSync(currentPassword, user.password)) {
+    if (!await bcrypt.compare(currentPassword, user.password)) {
       return res.status(400).json({ code: 400, message: 'كلمة المرور الحالية غير صحيحة' });
     }
     if (!PASSWORD_RE.test(newPassword)) {
       return res.status(400).json({ code: 400, message: 'كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل وتحتوي أحرفاً وأرقاماً فقط' });
     }
-    const hash = bcrypt.hashSync(newPassword, 10);
+    const hash = await bcrypt.hash(newPassword, 10);
     await run('UPDATE users SET password = ?, token_version = token_version + 1 WHERE id = ?', [hash, user.id]);
     logActivity(user.id, 'change_password', 'تغيير كلمة المرور');
-    res.json({ code: 0, message: 'تم تغيير كلمة المرور بنجاح' });
+
+    const updatedUser = await get('SELECT * FROM users WHERE id = ?', [user.id]);
+    const payload = { id: updatedUser.id, username: updatedUser.username, role: updatedUser.role, balance: updatedUser.balance, level_id: updatedUser.level_id, token_version: updatedUser.token_version };
+    const newToken = sign(payload);
+    setAuthCookie(res, newToken);
+
+    res.json({ code: 0, data: { user: payload }, message: 'تم تغيير كلمة المرور بنجاح' });
   } catch (err) {
     res.status(500).json({ code: 500, message: 'حدث خطأ في تغيير كلمة المرور' });
   }

@@ -6,7 +6,7 @@ import { api } from '../api';
 import { KeyIcon, InviteIcon } from '../components/icons';
 
 export default function Account() {
-  const { user, refresh } = useAuth();
+  const { user, setUser, refresh } = useAuth();
   const { notify } = useToast();
   const [form, setForm] = useState({ currentPassword: '', newPassword: '', confirm: '' });
   const [error, setError] = useState('');
@@ -26,10 +26,11 @@ export default function Account() {
     }
     setLoading(true);
     try {
-      await api.auth.changePassword({
+      const result = await api.auth.changePassword({
         currentPassword: form.currentPassword,
         newPassword: form.newPassword,
       });
+      if (result?.user) setUser(result.user);
       notify('تم تغيير كلمة المرور بنجاح');
       setForm({ currentPassword: '', newPassword: '', confirm: '' });
     } catch (err) {
@@ -37,7 +38,6 @@ export default function Account() {
       notify(err.message, 'error');
     } finally {
       setLoading(false);
-      refresh().catch(() => {});
     }
   };
 

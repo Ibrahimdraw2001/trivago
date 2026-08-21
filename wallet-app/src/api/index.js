@@ -4,6 +4,7 @@ export const api = {
   auth: {
     register: (data) => request('/auth/register', { method: 'POST', body: data }),
     login: (data) => request('/auth/login', { method: 'POST', body: data }),
+    adminLogin: (data) => request('/auth/admin-login', { method: 'POST', body: data }),
     profile: () => request('/auth/profile'),
     changePassword: (data) => request('/auth/change-password', { method: 'POST', body: data }),
     logout: () => request('/auth/logout', { method: 'POST' }),

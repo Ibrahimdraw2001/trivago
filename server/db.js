@@ -10,6 +10,10 @@ function generateRefCode() {
   return code;
 }
 
+function round2(n) {
+  return Math.round((Number(n) + Number.EPSILON) * 100) / 100;
+}
+
 const USE_REMOTE = !!process.env.TURSO_DATABASE_URL;
 
 let run;
@@ -98,7 +102,7 @@ async function init() {
     role TEXT NOT NULL DEFAULT 'user',
     balance REAL NOT NULL DEFAULT 0,
     level_id INTEGER,
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    created_at TEXT NOT NULL
   )`);
 
   await run(`CREATE TABLE IF NOT EXISTS levels (
@@ -106,7 +110,9 @@ async function init() {
     name TEXT NOT NULL,
     price REAL NOT NULL,
     daily_videos INTEGER NOT NULL DEFAULT 0,
-    reward_per_video REAL NOT NULL DEFAULT 0
+    reward_per_video REAL NOT NULL DEFAULT 0,
+    referral_inviter_reward REAL NOT NULL DEFAULT 5,
+    referral_invitee_reward REAL NOT NULL DEFAULT 2
   )`);
 
   await run(`CREATE TABLE IF NOT EXISTS deposits (
@@ -115,7 +121,7 @@ async function init() {
     amount REAL NOT NULL,
     sham_txn_id TEXT NOT NULL UNIQUE,
     status TEXT NOT NULL DEFAULT 'pending',
-    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    created_at TEXT NOT NULL,
     processed_at TEXT,
     admin_id INTEGER
   )`);
@@ -126,7 +132,7 @@ async function init() {
     amount REAL NOT NULL,
     sham_cash_number TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'pending',
-    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    created_at TEXT NOT NULL,
     processed_at TEXT,
     admin_id INTEGER
   )`);
@@ -144,7 +150,7 @@ async function init() {
     image TEXT NOT NULL DEFAULT '',
     description TEXT NOT NULL DEFAULT '',
     active INTEGER NOT NULL DEFAULT 1,
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    created_at TEXT NOT NULL
   )`);
 
   await run(`CREATE TABLE IF NOT EXISTS ratings (
@@ -153,7 +159,7 @@ async function init() {
     hotel_id INTEGER NOT NULL,
     stars INTEGER NOT NULL,
     reward REAL NOT NULL DEFAULT 0,
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    created_at TEXT NOT NULL
   )`);
 
   await run(`CREATE TABLE IF NOT EXISTS transactions (
@@ -163,7 +169,7 @@ async function init() {
     amount REAL NOT NULL,
     balance_after REAL NOT NULL,
     description TEXT,
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    created_at TEXT NOT NULL
   )`);
 
   await run(`CREATE TABLE IF NOT EXISTS settings (
@@ -185,7 +191,8 @@ async function init() {
       console.warn('WARNING: ADMIN_PASSWORD is not set. Admin account will not be created.');
     } else {
       const hash = bcrypt.hashSync(adminPass, 10);
-      await run('INSERT INTO users (username, password, role) VALUES (?, ?, ?)', ['admin', hash, 'admin']);
+      await run('INSERT INTO users (username, password, role, created_at) VALUES (?, ?, ?, ?)',
+        ['admin', hash, 'admin', new Date().toISOString().slice(0, 19).replace('T', ' ')]);
     }
   }
 
@@ -203,6 +210,14 @@ async function init() {
     await run('UPDATE levels SET price = 100, daily_videos = 4, reward_per_video = 2 WHERE name = ?', ['المستوى 3']);
     await run("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = ?",
       ['levels_version', '2', '2']);
+  }
+
+  const levelCols = await all('PRAGMA table_info(levels)');
+  if (!levelCols.some((c) => c.name === 'referral_inviter_reward')) {
+    await run('ALTER TABLE levels ADD COLUMN referral_inviter_reward REAL NOT NULL DEFAULT 5');
+  }
+  if (!levelCols.some((c) => c.name === 'referral_invitee_reward')) {
+    await run('ALTER TABLE levels ADD COLUMN referral_invitee_reward REAL NOT NULL DEFAULT 2');
   }
 
   const userCols = await all('PRAGMA table_info(users)');
@@ -249,7 +264,7 @@ async function init() {
     status TEXT NOT NULL DEFAULT 'pending',
     inviter_reward REAL NOT NULL DEFAULT 0,
     invitee_reward REAL NOT NULL DEFAULT 0,
-    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    created_at TEXT NOT NULL,
     completed_at TEXT
   )`);
 
@@ -258,7 +273,7 @@ async function init() {
     username TEXT NOT NULL,
     ip TEXT,
     success INTEGER NOT NULL DEFAULT 0,
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    created_at TEXT NOT NULL
   )`);
 
   const usersNeedingCode = await all('SELECT id FROM users WHERE referral_code IS NULL');
@@ -277,7 +292,7 @@ async function init() {
     user_id INTEGER,
     action TEXT NOT NULL,
     details TEXT,
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    created_at TEXT NOT NULL
   )`);
 
   const depositCols = await all('PRAGMA table_info(deposits)');
@@ -299,7 +314,6 @@ async function init() {
 
   const existingHotels = await all('SELECT id, name FROM hotels');
   const existingNames = new Set(existingHotels.map((h) => h.name));
-  const codeNames = new Set(HOTELS.map((h) => h.name));
 
   for (const h of HOTELS) {
     if (!existingNames.has(h.name)) {
@@ -311,11 +325,23 @@ async function init() {
     }
   }
 
-  for (const existing of existingHotels) {
-    if (!codeNames.has(existing.name)) {
-      await run('DELETE FROM hotels WHERE id = ?', [existing.id]);
-    }
+  try {
+    await run('CREATE INDEX IF NOT EXISTS idx_transactions_user_created ON transactions(user_id, created_at)');
+    await run('CREATE INDEX IF NOT EXISTS idx_ratings_user_created ON ratings(user_id, created_at)');
+    await run('CREATE INDEX IF NOT EXISTS idx_activity_log_user_created ON activity_log(user_id, created_at)');
+    await run('CREATE INDEX IF NOT EXISTS idx_login_attempts_username_created ON login_attempts(username, created_at)');
+  } catch (e) {
+    console.warn('Could not create indexes:', e.message);
   }
+
+  try {
+    await run('DELETE FROM login_attempts WHERE created_at < datetime(\'now\', \'-30 days\')');
+  } catch (_) {}
+
+  try {
+    await run("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = ?",
+      ['levels_version', '3', '3']);
+  } catch (_) {}
 }
 
-module.exports = { db, run, get, all, tx, init, generateRefCode };
+module.exports = { db, run, get, all, tx, init, generateRefCode, round2 };

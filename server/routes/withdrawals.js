@@ -2,6 +2,8 @@ const router = require('express').Router();
 const { run, get, all } = require('../db');
 const { authUser } = require('../middleware/auth');
 const { logActivity } = require('../helpers/activity');
+const { nowLocal } = require('../helpers/time');
+const { round2 } = require('../db');
 
 const MIN_WITHDRAW = 10;
 const BEP20_RE = /^0x[0-9a-fA-F]{40}$/;
@@ -29,22 +31,25 @@ router.post('/', authUser, async (req, res) => {
       return res.status(400).json({ code: 400, message: 'لديك 3 طلبات سحب قيد الانتظار بالفعل' });
     }
 
-    const result = await run(
-      'UPDATE users SET balance = balance - ? WHERE id = ? AND balance >= ?',
-      [value, req.user.id, value]
-    );
-    if (result.changes === 0) {
+    const user = await get('SELECT balance FROM users WHERE id = ?', [req.user.id]);
+    if (user.balance < value) {
       return res.status(400).json({ code: 400, message: 'الرصيد غير كافٍ' });
     }
 
-    const user = await get('SELECT balance FROM users WHERE id = ?', [req.user.id]);
-    const newBalance = user.balance;
+    const ts = nowLocal();
+    const newBalance = round2(user.balance - value);
+    await run('UPDATE users SET balance = ? WHERE id = ? AND balance >= ?', [newBalance, req.user.id, value]);
+    const check = await get('SELECT balance FROM users WHERE id = ?', [req.user.id]);
+    if (check.balance >= user.balance) {
+      return res.status(400).json({ code: 400, message: 'الرصيد غير كافٍ' });
+    }
+
     const insertResult = await run(
-      'INSERT INTO withdrawals (user_id, amount, sham_cash_number, wallet_address) VALUES (?, ?, ?, ?)',
-      [req.user.id, value, walletAddress, walletAddress]
+      'INSERT INTO withdrawals (user_id, amount, sham_cash_number, wallet_address, created_at) VALUES (?, ?, ?, ?, ?)',
+      [req.user.id, value, walletAddress, walletAddress, ts]
     );
-    await run('INSERT INTO transactions (user_id, type, amount, balance_after, description) VALUES (?, ?, ?, ?, ?)',
-      [req.user.id, 'withdraw', -value, newBalance, 'طلب سحب بانتظار الموافقة']);
+    await run('INSERT INTO transactions (user_id, type, amount, balance_after, description, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+      [req.user.id, 'withdraw', -value, newBalance, 'طلب سحب بانتظار الموافقة', ts]);
     logActivity(req.user.id, 'submit_withdrawal', `سحب $${value} إلى ${walletAddress.slice(0, 10)}...`);
     res.json({ code: 0, data: { id: insertResult.lastID, status: 'pending' }, message: 'تم إرسال طلب السحب عبر USDT، بانتظار موافقة الأدمن' });
   } catch (err) {

@@ -16,7 +16,7 @@ export default function AdminLogin() {
     setError('');
     setLoading(true);
     try {
-      const result = await api.request('/auth/admin-login', { method: 'POST', body: form });
+      const result = await api.auth.adminLogin(form);
       setUser(result.user);
       navigate('/admin');
     } catch (err) {
